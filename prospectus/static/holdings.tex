@@ -1,0 +1,24 @@
+% Static facts from issuer pages (not backtest results); sources: see \citet{issuers2026}.
+\begin{table}[H]
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\caption{Holdings, their role and their implementation for euro-based investors}\label{tab:holdings}
+\begin{threeparttable}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\rowcolor{fmdark}\textcolor{white}{\textbf{ETF}} & \textcolor{white}{\textbf{Asset class}} & \textcolor{white}{\textbf{Role in the portfolio}} & \textcolor{white}{\textbf{Since}} & \textcolor{white}{\textbf{Fee}} & \textcolor{white}{\textbf{UCITS equivalent (TER)}}\\
+SPY & US equities & growth engine & 1993 & 0.09\% & iShares Core S\&P 500, CSPX (0.07\%)\\
+EFA & Dev.\ ex-US equities & int'l growth & 2001 & 0.32\% & Xtrackers MSCI World ex USA, EXUS (0.15\%)\\
+IEF & US Treasuries 7--10y & recession hedge & 2002 & 0.15\% & iShares \$ Treasury 7--10yr, CSBGU0 (0.07\%)\\
+VNQ & US real estate (REITs) & real assets, income & 2004 & 0.13\% & iShares US Property Yield, IUSP (0.40\%)\\
+DBC & Broad commodities & inflation hedge & 2006 & 0.89\%$^a$ & iShares Div.\ Commodity Swap (0.19\%)\\
+GLD & Gold & crisis hedge & 2004 & 0.40\% & iShares Physical Gold ETC, SGLN (0.12\%)\\
+BIL & T-bills (cash) & safe asset & 2007 & 0.14\% & iShares \$ Treasury 0--1yr, IB01 (0.07\%)\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Fees: expense ratios from the issuers' product pages, accessed 20 Nov 2026 \citep{issuers2026}; $^a$ from a fund-data aggregator,
+not confirmed on the issuer page. In the backtest the cash return is the T-bill yield (\texttt{\textasciicircum IRX}); BIL is the
+investable proxy. UCITS funds are listed in Europe and are the vehicles EU retail investors can buy.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

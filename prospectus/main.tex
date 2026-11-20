@@ -7,16 +7,15 @@
 \usepackage{iftex}
 \ifXeTeX
   \usepackage{fontspec}
-  \setmainfont{TeX Gyre Heros}
-  \setmathfont{TeX Gyre Pagella Math}[Scale=MatchLowercase]
+  \setmainfont{texgyreheros}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
+    ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
 \else
-  \usepackage[T1]{fontenc}\usepackage[utf8]{inputenc}\usepackage{helvet}\renewcommand{\familydefault}{\sfdefault}
+  \usepackage[T1]{fontenc}\usepackage[utf8]{inputenc}\usepackage{tgheros}\renewcommand{\familydefault}{\sfdefault}
 \fi
-\ifXeTeX\usepackage{unicode-math}\fi
 \usepackage[a4paper,margin=1.9cm,top=1.7cm,bottom=1.8cm]{geometry}
 \usepackage{amsmath}
 \usepackage[table]{xcolor}
-\usepackage{graphicx,booktabs,array,longtable,tabularx,multirow}
+\usepackage{graphicx,booktabs,array,longtable,tabularx,multirow,float}
 \usepackage[font=small,labelfont=bf,skip=3pt]{caption}
 \usepackage[para,flushleft]{threeparttable}
 \usepackage{enumitem}
@@ -76,9 +75,8 @@
 \end{tabular}
 
 \vfill
-\small\textit{Backtest period \res{sample_start}--\res{sample_end}. Past performance, in particular
-simulated past performance, is not a reliable indicator of future results. This document was prepared for a
-university course and is not investment advice.}
+\small\textit{Past performance, in particular simulated past performance, is not a reliable indicator of future
+results. This document was prepared for a university course and is not investment advice.}
 \end{titlepage}
 \setcounter{page}{1}
 
@@ -118,11 +116,12 @@ university course and is not investment advice.}
 }
 
 \section*{Appendix: sources of figures}
-{\footnotesize
-Every number, table and figure in this prospectus is computed in the notebook
-\texttt{GroupZ\_RiskParity\_Trend.ipynb}. Click a value in the text to jump to its row here, and click a page
-number to jump back. The notebook link opens the section that computes the value. YF = Yahoo Finance via the
-\texttt{yfinance} API, daily adjusted close prices.\par
+{\scriptsize
+Every number, table and figure in this prospectus is computed in the notebook GroupZ\_RiskParity\_Trend.ipynb.
+Click a value in the text to jump to its row here, and click a page number to jump back; the notebook link opens
+the section that computes the value. YF = Yahoo Finance via the \texttt{yfinance} API (daily adjusted close);
+6 ETFs = SPY, EFA, IEF, VNQ, DBC, GLD. All market data were downloaded on \res{data_retrieved}.\par
+\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.0}
 \sourcestable}
 
 \end{document}

@@ -27,7 +27,9 @@ def test_app_defaults_reproduce_notebook():
     import streamlit_app as app
 
     results = json.loads((ROOT / "results" / "results.json").read_text())
-    data = app.load_market_data(sc.START, sc.END)
+    data, _ = app.load_market_data(sc.START, sc.END)
     run = app.run_default(data)
     for key in ["ann_mean", "ann_vol", "sharpe", "beta_mkt", "alpha_mkt", "info_ratio", "max_dd"]:
-        assert run["summary"][key] == pytest.approx(results["strategy"][key], abs=1e-6), key
+        # a fresh download can differ from the notebook's in the last digits (Yahoo re-computes adjusted
+        # prices), so we allow 1e-4; any difference in the calculation itself would be far larger
+        assert run["summary"][key] == pytest.approx(results["strategy"][key], abs=1e-4), key

@@ -1,0 +1,19 @@
+\textbf{Rebalancing.} Orders are placed once a month at the closing auction of the last trading day, using the weights computed
+from that day's closing prices. All seven instruments (six ETFs and a T-bill ETF) trade billions of dollars a day, so a
+portfolio of any realistic private-client size can be traded without moving prices. A model portfolio can be applied to
+many client accounts at once.
+
+\textbf{Turnover and costs.} The strategy trades \res{strat_turnover} of its value per year, against \res{b6040_turnover}
+for 60/40: risk-parity weights change with volatility, and trend signals switch whole positions in and out. At our assumed
+\res{cost_bps} per unit traded this costs \res{cost_drag} p.a.; the gross Sharpe ratio of \res{strat_gross_sharpe} falls to
+\res{strat_sharpe} net. Solving $SR_{\text{strategy}}(c)=SR_{60/40}(c)$ with \texttt{fsolve} gives a \emph{break-even cost} of
+\res{breakeven_bps}: above it, the 60/40 portfolio offers the better risk-adjusted return. Bid-ask spreads of these ETFs are
+typically one basis point or less and commissions are often zero, so a cost-efficient platform is essential. At 50 bps the
+Sharpe ratio would drop to \res{sharpe_cost50}. Simple ways to cut turnover are trading only weight changes above a threshold
+and switching T-bill positions within a money-market sweep.
+
+\textbf{Euro-based clients.} US-listed ETFs are not available to EU retail investors, so the UCITS equivalents in
+Table~\ref{tab:holdings} are used. The backtest is in US dollars; a euro investor bears the EUR/USD exchange rate on the
+whole portfolio. Because the strategy's own volatility is low, currency risk would dominate, so the bond and cash sleeves
+should be held in EUR-hedged share classes. US investors should note that DBC issues a Schedule K-1 tax form; the
+no-K-1 version (PDBC) tracks a similar index.

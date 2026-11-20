@@ -1,0 +1,24 @@
+\begin{itemize}[leftmargin=1em]
+\item \textbf{Concentration in interest-rate risk.} Treasuries are the least volatile asset and therefore receive the largest
+weight (on average \res{avg_w_ief}). A simultaneous fall of bonds and equities, as in 2022, hits risk parity directly; the trend
+filter limited the 2022 loss to \res{strat_ret_2022} but cannot prevent sudden shocks.
+\item \textbf{Trend reversals.} After a sharp fall and quick rebound the filter sells late and buys back late. In 2020 the
+strategy returned \res{strat_ret_2020} while 60/40 earned \res{b6040_ret_2020}. In strong bull markets the client will often
+lag: the strategy beat 60/40 in only \res{years_beating_6040} of \res{n_years_cal} calendar years.
+\item \textbf{Look-ahead bias.} Every weight uses only prices up to its decision date. We test this directly: rerunning the
+backtest on data that end in December 2015 reproduces exactly the same weights up to that month.
+\item \textbf{Survivorship and hindsight bias.} We hold broad asset classes instead of picked winners, and their ETFs are
+among the largest of their kind. Still, the universe is chosen today. Leaving out any one asset class gives Sharpe ratios
+between \res{loo_sharpe_min} and \res{loo_sharpe_max} (worst without \res{loo_worst_asset}; without gold \res{loo_sharpe_nogold})
+and a maximum drawdown no worse than \res{loo_maxdd_worst}, so no single holding drives the result.
+\item \textbf{Data snooping.} The 10-month average and the one-year risk window are fixed in advance from the literature. Across
+all \res{heat_n} combinations of 6--12 months and 3, 6 or 12 months of risk data, the Sharpe ratio stays between \res{heat_min}
+and \res{heat_max} (Figure~\ref{fig:sensitivity}): a plateau, not a lucky spike.
+\item \textbf{Short sample, model and data risk.} \res{sample_years} years contain only three major crises; the strategy's
+results depend on how future crises unfold. Covariances are estimated with error, Yahoo Finance revises adjusted prices
+occasionally, and the backtest assumes trading at closing prices without taxes.
+\end{itemize}
+\begin{figure}[H]
+\centering\includegraphics[width=0.93\textwidth]{figures/fig_sensitivity.pdf}\resmark{fig_sensitivity}
+\caption{Net Sharpe ratio for different trend and risk windows; * marks the base case.}\label{fig:sensitivity}
+\end{figure}

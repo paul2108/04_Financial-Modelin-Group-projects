@@ -28,14 +28,16 @@
   \begingroup\edef\x{\endgroup\noexpand\protected@write\noexpand\@auxout{}%
     {\noexpand\string\noexpand\res@used{#1}{\noexpand\thepage}{\theres@use}}}\x}
 
-\newcommand{\res}[1]{\res@check{#1}\res@record{#1}\hyperlink{res@row@#1}{\csuse{res@val@#1}}}
+\newcommand{\res}[1]{\leavevmode\res@check{#1}\res@record{#1}\hyperlink{res@row@#1}{\csuse{res@val@#1}}}
 \newcommand{\resmark}[1]{\res@check{#1}\res@record{#1}}
+\robustify{\res}\robustify{\resmark}  % safe inside captions and other moving arguments
 
 % read back from the .aux file (first use of a key fixes its row order)
 \def\res@usedkeys{}
+% global definitions: the .aux file is read inside a group
 \newcommand{\res@used}[3]{%
-  \ifcsdef{res@pages@#1}{}{\csdef{res@pages@#1}{}\listadd{\res@usedkeys}{#1}}%
-  \ifinlistcs{#2}{res@pages@#1}{}{\listcsadd{res@pages@#1}{#2}\csdef{res@pageuse@#1@#2}{#3}}}
+  \ifcsdef{res@pages@#1}{}{\csgdef{res@pages@#1}{}\listgadd{\res@usedkeys}{#1}}%
+  \ifinlistcs{#2}{res@pages@#1}{}{\listcsgadd{res@pages@#1}{#2}\csgdef{res@pageuse@#1@#2}{#3}}}
 
 \newcommand{\res@printpages}[1]{%
   \def\res@sep{\def\res@sep{, }}%
@@ -50,9 +52,9 @@
 \newcommand{\res@addrow}[1]{\appto\res@body{\res@row{#1}}}
 \newcommand{\sourcestable}{%
   \def\res@body{}\forlistloop{\res@addrow}{\res@usedkeys}%
-  \begin{longtable}{@{}>{\raggedleft\arraybackslash}p{1.55cm}p{5.3cm}p{1.1cm}p{0.95cm}p{3.1cm}p{1.9cm}@{}}
+  \begin{longtable}{@{}>{\raggedleft\arraybackslash}p{1.45cm}>{\raggedright\arraybackslash}p{7.2cm}>{\raggedright\arraybackslash}p{1.15cm}p{1.05cm}>{\raggedright\arraybackslash}p{3.3cm}p{1.35cm}@{}}
   \toprule
-  \textbf{Value} & \textbf{Meaning} & \textbf{Cited on p.} & \textbf{Notebook} & \textbf{Source} & \textbf{Retrieved}\\
+  \textbf{Value} & \textbf{Meaning} & \textbf{Cited p.} & \textbf{Notebook} & \textbf{Source} & \textbf{Retrieved}\\
   \midrule\endhead
   \bottomrule\endfoot
   \res@body

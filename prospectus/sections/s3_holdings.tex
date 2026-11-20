@@ -1,0 +1,8 @@
+The portfolio holds one large, liquid ETF per asset class (Table~\ref{tab:holdings}). The asset classes are those
+of \citet{faber2007}, extended by gold. They were chosen because they respond differently to growth and inflation
+shocks (stocks and REITs to growth, Treasuries to recessions, commodities and gold to inflation), not because of
+their past returns. Prices of the ETFs already reflect their fees.
+\input{static/holdings.tex}
+At the last decision date (\res{current_date}) \res{n_above_trend} of the six asset classes were above trend and the portfolio held
+\res{current_cash} in T-bills. Over the whole backtest Treasuries (IEF) were the largest holding with an average weight of
+\res{avg_w_ief}, and T-bills averaged \res{avg_w_cash}.

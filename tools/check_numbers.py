@@ -19,8 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PROSP = ROOT / "prospectus"
 
 # numbers allowed in prose: years, section/figure refs, assumptions stated as parameters, list numbering
-ALLOWED = {"60/40", "1/N", "7-10", "10-month", "252", "S&P 500", "13-week"}
-NUM_PATTERN = re.compile(r"(?<![\w\\{])[-$]*\d+[.,]\d+\s*\\?%?|(?<![\w\\{])\d+\s*\\%")
+ALLOWED = {"60/40", "1/N", "7-10", "10-month", "252", "S&P 500", "13-week", "equities fall by", "AGG (US"}
+NUM_PATTERN = re.compile(r"(?<![\w\\{=])[-$]*\d+[.,]\d+(?!\d|cm|pt|em|mm|in)\s*\\?%?|(?<![\w\\{])\d+\s*\\%")
 
 
 def tex_files():

@@ -1,0 +1,11 @@
+[project]
+name = "groupz-risk-parity-trend"
+version = "1.0.0"
+description = "Financial Modeling (Nova SBE) group project: Risk Parity + Trend prospectus, notebook and app"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["app"]
+testpaths = ["tests"]
+markers = ["network: needs internet access to Yahoo Finance (deselect with -m 'not network')"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]

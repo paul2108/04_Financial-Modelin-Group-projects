@@ -1,0 +1,24 @@
+{
+  "latex-workshop.latex.tools": [
+    {
+      "name": "tectonic",
+      "command": "tectonic",
+      "args": ["-X", "compile", "--synctex", "--keep-logs", "--keep-intermediates", "%DOC%.tex"],
+      "env": {}
+    },
+    {
+      "name": "latexmk",
+      "command": "latexmk",
+      "args": ["-synctex=1", "-interaction=nonstopmode", "-file-line-error", "-pdf", "-outdir=%OUTDIR%", "%DOC%"],
+      "env": {}
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    { "name": "tectonic (default)", "tools": ["tectonic"] },
+    { "name": "latexmk (MacTeX / TeX Live)", "tools": ["latexmk"] }
+  ],
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "jupyter.notebookFileRoot": "${fileDirname}",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
+}

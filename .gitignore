@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+# macOS / editors / local agent config
+.DS_Store
+.claude/
+# LaTeX build files (the final PDF is kept)
+prospectus/*.aux
+prospectus/*.log
+prospectus/*.out
+prospectus/*.toc
+prospectus/*.bbl
+prospectus/*.blg
+prospectus/*.fls
+prospectus/*.fdb_latexmk
+prospectus/*.synctex.gz
+prospectus/main.pdf

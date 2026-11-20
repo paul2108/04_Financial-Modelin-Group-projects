@@ -11,6 +11,10 @@ Rebalanced monthly and compared with a 60/40 portfolio, net of transaction costs
 | Notebook in Colab | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/paul2108/04_Financial-Modelin-Group-projects/blob/main/notebook/GroupZ_RiskParity_Trend.ipynb) |
 | Prospectus (PDF) | [`prospectus/GroupZ_Prospectus.pdf`](prospectus/GroupZ_Prospectus.pdf) |
 
+> **Disclaimer:** This is a university group project (Financial Modeling, Nova School of Business and Economics)
+> and **not investment advice**. Past performance, in particular simulated past performance, is not a reliable
+> indicator of future results.
+
 **Group Z:** Gabriel Depraz, Marwan El-shazly, Bruno Francisco Barth, Tim Jonas Trompa, Paul Kuehl, Felix Schoenstein.
 
 ## Repository layout

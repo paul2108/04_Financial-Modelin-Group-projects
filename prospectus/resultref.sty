@@ -30,7 +30,14 @@
 
 \newcommand{\res}[1]{\leavevmode\res@check{#1}\res@record{#1}\hyperlink{res@row@#1}{\csuse{res@val@#1}}}
 \newcommand{\resmark}[1]{\res@check{#1}\res@record{#1}}
-\robustify{\res}\robustify{\resmark}  % safe inside captions and other moving arguments
+% \resval{key}{fallback}{text}: clickable table cell. Links to the row of `key` if the text cites that key
+% (decided from the previous run's .aux file), otherwise to the row of `fallback` (e.g. the table itself).
+\newcommand{\res@xrecord}[1]{%
+  \begingroup\edef\x{\endgroup\noexpand\protected@write\noexpand\@auxout{}%
+    {\noexpand\string\noexpand\res@alsoused{#1}{\noexpand\thepage}}}\x}
+\newcommand{\resval}[3]{\leavevmode\res@check{#1}\res@check{#2}%
+  \ifcsdef{res@pages@#1}{\res@xrecord{#1}\hyperlink{res@row@#1}{#3}}{\res@xrecord{#2}\hyperlink{res@row@#2}{#3}}}
+\robustify{\res}\robustify{\resmark}\robustify{\resval}  % safe inside captions and other moving arguments
 
 % read back from the .aux file (first use of a key fixes its row order)
 \def\res@usedkeys{}
@@ -39,9 +46,13 @@
   \ifcsdef{res@pages@#1}{}{\csgdef{res@pages@#1}{}\listgadd{\res@usedkeys}{#1}}%
   \ifinlistcs{#2}{res@pages@#1}{}{\listcsgadd{res@pages@#1}{#2}\csgdef{res@pageuse@#1@#2}{#3}}}
 
+% pages on which a table cell shows the value (only listed for keys that already have a row)
+\newcommand{\res@alsoused}[2]{\ifinlistcs{#2}{res@xpages@#1}{}{\listcsgadd{res@xpages@#1}{#2}}}
 \newcommand{\res@printpages}[1]{%
   \def\res@sep{\def\res@sep{, }}%
-  \forlistcsloop{\res@printpage{#1}}{res@pages@#1}}
+  \forlistcsloop{\res@printpage{#1}}{res@pages@#1}%
+  \ifcsdef{res@xpages@#1}{\forlistcsloop{\res@printxpage{#1}}{res@xpages@#1}}{}}
+\newcommand{\res@printxpage}[2]{\ifinlistcs{#2}{res@pages@#1}{}{\res@sep#2}}
 \newcommand{\res@printpage}[2]{\res@sep\hyperlink{res@use@\csuse{res@pageuse@#1@#2}}{#2}}
 
 \newcommand{\res@row}[1]{%

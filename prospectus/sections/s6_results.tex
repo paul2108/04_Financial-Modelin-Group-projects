@@ -1,7 +1,8 @@
-\begin{figure}[H]
-\centering\includegraphics[width=0.93\textwidth]{figures/fig_cumulative.pdf}\resmark{fig_cumulative}
+\begin{figure}[!htb]
+\centering
 \caption{Growth of \$1 invested on \res{first_decision} (log scale), net of costs unless stated. The dashed line shows the
 strategy before trading costs.}\label{fig:cumulative}
+\includegraphics[width=\textwidth]{figures/fig_cumulative.pdf}\resmark{fig_cumulative}
 \end{figure}
 
 Figure~\ref{fig:cumulative} shows the central trade-off. \$1 grew to \$\res{strat_final_value} in the strategy, to
@@ -9,7 +10,7 @@ Figure~\ref{fig:cumulative} shows the central trade-off. \$1 grew to \$\res{stra
 until 2014 because it avoided the 2008 crash, and it fell behind in the long equity bull market that followed. Table~\ref{tab:performance}
 reports all measures.
 
-\begin{table}[H]
+\begin{table}[!htb]
 \centering\small
 \caption{Performance \res{sample_start}--\res{sample_end}, monthly returns, net of \res{cost_bps} per unit of turnover
 (except ``Gross'')}\label{tab:performance}
@@ -44,9 +45,10 @@ should not buy it; the measure that matters for our client is the drawdown.
 loss was about a sixth of the 60/40 loss. The worst 12-month return was \res{strat_worst_12m} vs \res{b6040_worst_12m}.
 \end{itemize}
 
-\begin{figure}[H]
-\centering\includegraphics[width=0.93\textwidth]{figures/fig_drawdowns.pdf}\resmark{fig_drawdowns}
+\begin{figure}[!htb]
+\centering
 \caption{Drawdown from the previous peak, net of costs.}\label{fig:drawdowns}
+\includegraphics[width=\textwidth]{figures/fig_drawdowns.pdf}\resmark{fig_drawdowns}
 \end{figure}
 
 \textbf{Stress periods.} In the financial crisis (Nov 2007--Feb 2009) the strategy gained \res{strat_gfc} while 60/40 lost
@@ -55,7 +57,8 @@ loss was about a sixth of the 60/40 loss. The worst 12-month return was \res{str
 recoveries: from 2023 to Oct 2026 the strategy returned \res{strat_recov}, 60/40 \res{b6040_recov}. Figure~\ref{fig:weights}
 shows how the allocation shifts into T-bills in falling markets.
 
-\begin{figure}[H]
-\centering\includegraphics[width=0.93\textwidth]{figures/fig_weights.pdf}\resmark{fig_weights}
+\begin{figure}[!htb]
+\centering
 \caption{Target weights at each monthly rebalancing date. Grey: T-bills held because an asset class is below trend.}\label{fig:weights}
+\includegraphics[width=\textwidth]{figures/fig_weights.pdf}\resmark{fig_weights}
 \end{figure}

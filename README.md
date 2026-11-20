@@ -10,6 +10,7 @@ Rebalanced monthly and compared with a 60/40 portfolio, net of transaction costs
 | Interactive app | https://groupz-risk-parity-trend.streamlit.app |
 | Notebook in Colab | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/paul2108/04_Financial-Modelin-Group-projects/blob/main/notebook/GroupZ_RiskParity_Trend.ipynb) |
 | Prospectus (PDF) | [`prospectus/GroupZ_Prospectus.pdf`](prospectus/GroupZ_Prospectus.pdf) |
+| Executed notebook as PDF (read without running) | [`notebook/GroupZ_RiskParity_Trend.pdf`](notebook/GroupZ_RiskParity_Trend.pdf) |
 
 > **Disclaimer:** This is a university group project (Financial Modeling, Nova School of Business and Economics)
 > and **not investment advice**. Past performance, in particular simulated past performance, is not a reliable
@@ -39,7 +40,7 @@ Yahoo Finance through `yfinance`.
 ```bash
 make venv        # .venv with all dependencies
 make test        # unit tests (no internet needed)
-make notebook    # run the notebook, refresh figures/tables/results_macros.tex for the prospectus
+make notebook    # run the notebook, refresh figures/tables/results_macros.tex and save a PDF copy of it
 make pdf         # build prospectus/GroupZ_Prospectus.pdf with tectonic
 make check       # verify that every number in the PDF comes from the notebook register
 make app         # start the Streamlit app on http://localhost:8501

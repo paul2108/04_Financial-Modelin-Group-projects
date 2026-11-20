@@ -3,7 +3,7 @@ PY      := .venv/bin/python
 NB      := notebook/GroupZ_RiskParity_Trend.ipynb
 export MPLCONFIGDIR := $(CURDIR)/.venv/.mplconfig
 
-.PHONY: help venv core test test-all notebook app pdf check all clean
+.PHONY: help venv core test test-all notebook notebook-pdf app pdf check all clean
 
 help:            ## list the available commands
 	@grep -E '^[a-z-]+:.*##' Makefile | sed 's/:.*##/\t/'
@@ -21,9 +21,13 @@ test:            ## unit tests without internet access
 test-all:        ## all tests incl. the app-vs-notebook check (needs Yahoo Finance)
 	$(PY) -m pytest
 
-notebook: core   ## execute the notebook top to bottom and refresh the prospectus exports
+notebook: core   ## run the notebook top to bottom, refresh the prospectus exports and save a PDF copy
 	$(PY) -m jupyter nbconvert --to notebook --execute --inplace \
 	  --ExecutePreprocessor.timeout=1200 --ExecutePreprocessor.kernel_name=python3 $(NB)
+	$(PY) tools/export_notebook_pdf.py
+
+notebook-pdf:    ## save a PDF copy of the executed notebook (notebook/GroupZ_RiskParity_Trend.pdf)
+	$(PY) tools/export_notebook_pdf.py
 
 app:             ## start the Streamlit app locally
 	$(PY) -m streamlit run app/streamlit_app.py

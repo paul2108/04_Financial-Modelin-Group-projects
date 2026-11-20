@@ -1,0 +1,61 @@
+# Risk Parity + Trend — Group Z (Financial Modeling, Nova SBE)
+
+An investor prospectus, a backtest notebook and an interactive app for a simple, rules-based model portfolio:
+six asset-class ETFs (SPY, EFA, IEF, VNQ, DBC, GLD), **equal risk contribution** weights solved with
+`scipy.optimize.fsolve`, and a **10-month trend filter** that moves weak asset classes into T-bills.
+Rebalanced monthly and compared with a 60/40 portfolio, net of transaction costs.
+
+| | |
+|---|---|
+| Interactive app | https://groupz-risk-parity-trend.streamlit.app |
+| Notebook in Colab | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/paul2108/04_Financial-Modelin-Group-projects/blob/main/notebook/GroupZ_RiskParity_Trend.ipynb) |
+| Prospectus (PDF) | [`prospectus/GroupZ_Prospectus.pdf`](prospectus/GroupZ_Prospectus.pdf) |
+
+**Group Z:** Gabriel Depraz, Marwan El-shazly, Bruno Francisco Barth, Tim Jonas Trompa, Paul Kuehl, Felix Schoenstein.
+
+## Repository layout
+
+```
+notebook/GroupZ_RiskParity_Trend.ipynb   the backtest (ETL -> strategy -> results -> checks -> export); single source of truth
+app/strategy_core.py                     AUTO-GENERATED from the notebook cells tagged "core" (make core)
+app/streamlit_app.py                     Streamlit app using exactly that core
+prospectus/main.tex, sections/*.tex      LaTeX prospectus; every number comes from results_macros.tex
+prospectus/resultref.sty                 \res{key}: value + link to the "Sources of figures" appendix
+tests/                                   unit tests (synthetic data) and notebook-vs-app consistency test
+tools/export_core.py, check_numbers.py   core export and provenance check (both support --dry-run)
+```
+
+## Run it
+
+**Colab:** open the badge above and choose *Runtime -> Run all*. No data files are needed: all prices come from
+Yahoo Finance through `yfinance`.
+
+**Locally** (Python 3.12, [uv](https://docs.astral.sh/uv/), GNU make):
+
+```bash
+make venv        # .venv with all dependencies
+make test        # unit tests (no internet needed)
+make notebook    # run the notebook, refresh figures/tables/results_macros.tex for the prospectus
+make pdf         # build prospectus/GroupZ_Prospectus.pdf with tectonic
+make check       # verify that every number in the PDF comes from the notebook register
+make app         # start the Streamlit app on http://localhost:8501
+```
+
+**LaTeX in VS Code:** install the *LaTeX Workshop* extension and [tectonic](https://tectonic-typesetting.github.io)
+(`brew install tectonic`). Open `prospectus/main.tex` and save it, or run *LaTeX Workshop: Build LaTeX project*. The recipe
+in `.vscode/settings.json` uses tectonic. A latexmk recipe for MacTeX/TeX Live is included as an alternative.
+
+## Deploying the app (Streamlit Community Cloud)
+
+1. Go to <https://share.streamlit.io>, sign in with GitHub and choose *Create app*, then *Deploy a public app from GitHub*.
+2. Repository `paul2108/04_Financial-Modelin-Group-projects`, branch `main`, main file `app/streamlit_app.py`.
+3. *Advanced settings*: Python 3.12. App URL: `groupz-risk-parity-trend`.
+4. Dependencies come from `requirements.txt` in the repository root.
+
+## Consistency between notebook, app and prospectus
+
+* The notebook is the only place where calculations are written. `make core` copies its `core` cells to `app/strategy_core.py`,
+  and `tests/test_consistency.py` fails if the copy is out of date.
+* With default settings the app reproduces Table 1 of the prospectus (`pytest -m network` compares against `results/results.json`).
+* The prospectus prints results only through `\res{key}`. The appendix table lists, for every value, the page where it is cited,
+  the notebook section that computes it, the data source and the retrieval time stamp.

@@ -1,0 +1,60 @@
+% resultref.sty -- provenance links between the prospectus and the notebook's number register
+%
+% The notebook writes results_macros.tex with one line per result:
+%   \defres{key}{value}{description}{notebook section}{link}{source}{retrieved}
+% In the text:
+%   \res{key}      prints the value, links it to its row in the "Sources of figures" table and records
+%                  the page on which it was cited (via the .aux file)
+%   \resmark{key}  records a figure/table without printing anything (use next to \includegraphics)
+%   \sourcestable  prints the table: value | meaning | cited on p. | notebook | source | retrieved
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{resultref}[2026/11/20 Result provenance references (Group Z)]
+\RequirePackage{etoolbox}
+\RequirePackage{longtable}
+\RequirePackage{hyperref}
+
+\newcommand{\defres}[7]{%
+  \csdef{res@val@#1}{#2}\csdef{res@desc@#1}{#3}\csdef{res@sec@#1}{#4}%
+  \csdef{res@url@#1}{#5}\csdef{res@src@#1}{#6}\csdef{res@date@#1}{#7}}
+
+\newcounter{res@use}
+\newcommand{\res@check}[1]{%
+  \ifcsdef{res@val@#1}{}{\PackageError{resultref}{Unknown result key '#1'}{Run the notebook (Section 9) first.}}}
+
+% record usage: key, page (expanded at shipout), use id (expanded now)
+\newcommand{\res@record}[1]{%
+  \stepcounter{res@use}%
+  \Hy@raisedlink{\hypertarget{res@use@\theres@use}{}}%
+  \begingroup\edef\x{\endgroup\noexpand\protected@write\noexpand\@auxout{}%
+    {\noexpand\string\noexpand\res@used{#1}{\noexpand\thepage}{\theres@use}}}\x}
+
+\newcommand{\res}[1]{\res@check{#1}\res@record{#1}\hyperlink{res@row@#1}{\csuse{res@val@#1}}}
+\newcommand{\resmark}[1]{\res@check{#1}\res@record{#1}}
+
+% read back from the .aux file (first use of a key fixes its row order)
+\def\res@usedkeys{}
+\newcommand{\res@used}[3]{%
+  \ifcsdef{res@pages@#1}{}{\csdef{res@pages@#1}{}\listadd{\res@usedkeys}{#1}}%
+  \ifinlistcs{#2}{res@pages@#1}{}{\listcsadd{res@pages@#1}{#2}\csdef{res@pageuse@#1@#2}{#3}}}
+
+\newcommand{\res@printpages}[1]{%
+  \def\res@sep{\def\res@sep{, }}%
+  \forlistcsloop{\res@printpage{#1}}{res@pages@#1}}
+\newcommand{\res@printpage}[2]{\res@sep\hyperlink{res@use@\csuse{res@pageuse@#1@#2}}{#2}}
+
+\newcommand{\res@row}[1]{%
+  \Hy@raisedlink{\hypertarget{res@row@#1}{}}\csuse{res@val@#1} & \csuse{res@desc@#1} &
+  \res@printpages{#1} & \href{\csuse{res@url@#1}}{\csuse{res@sec@#1}} & \csuse{res@src@#1} &
+  \csuse{res@date@#1}\tabularnewline}
+
+\newcommand{\res@addrow}[1]{\appto\res@body{\res@row{#1}}}
+\newcommand{\sourcestable}{%
+  \def\res@body{}\forlistloop{\res@addrow}{\res@usedkeys}%
+  \begin{longtable}{@{}>{\raggedleft\arraybackslash}p{1.55cm}p{5.3cm}p{1.1cm}p{0.95cm}p{3.1cm}p{1.9cm}@{}}
+  \toprule
+  \textbf{Value} & \textbf{Meaning} & \textbf{Cited on p.} & \textbf{Notebook} & \textbf{Source} & \textbf{Retrieved}\\
+  \midrule\endhead
+  \bottomrule\endfoot
+  \res@body
+  \end{longtable}}
+\endinput

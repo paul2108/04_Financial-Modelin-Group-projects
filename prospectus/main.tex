@@ -1,0 +1,128 @@
+% Investor prospectus "Risk Parity + Trend" -- Group Z, Financial Modeling (Nova SBE)
+% Build: tectonic -X compile main.tex   (or VS Code + LaTeX Workshop, recipe "tectonic")
+% Every result is printed with \res{key}; the values come from results_macros.tex, which the
+% notebook (Section 9) writes. Do not type results by hand.
+\documentclass[10pt,a4paper]{article}
+
+\usepackage{iftex}
+\ifXeTeX
+  \usepackage{fontspec}
+  \setmainfont{TeX Gyre Heros}
+  \setmathfont{TeX Gyre Pagella Math}[Scale=MatchLowercase]
+\else
+  \usepackage[T1]{fontenc}\usepackage[utf8]{inputenc}\usepackage{helvet}\renewcommand{\familydefault}{\sfdefault}
+\fi
+\ifXeTeX\usepackage{unicode-math}\fi
+\usepackage[a4paper,margin=1.9cm,top=1.7cm,bottom=1.8cm]{geometry}
+\usepackage{amsmath}
+\usepackage[table]{xcolor}
+\usepackage{graphicx,booktabs,array,longtable,tabularx,multirow}
+\usepackage[font=small,labelfont=bf,skip=3pt]{caption}
+\usepackage[para,flushleft]{threeparttable}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage[authoryear,round]{natbib}
+\usepackage{fancyhdr}
+\usepackage[hidelinks=false,colorlinks=true,linkcolor=fmdark,urlcolor=fmdark,citecolor=fmdark]{hyperref}
+\usepackage{resultref}
+
+\definecolor{fmdark}{HTML}{0D366B}
+\definecolor{fmlight}{HTML}{CDE2FB}
+\definecolor{fmgrey}{HTML}{F0EFEC}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlist{nosep,leftmargin=1.2em}
+\renewcommand{\arraystretch}{1.08}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{fmdark}Risk Parity + Trend --- Investor prospectus}
+\fancyhead[R]{\small\color{fmdark}Group Z}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\newcommand{\sectionrule}{}
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{0pt}{8pt}{3pt}{\large\bfseries\color{fmdark}}}
+\renewcommand\subsection{\@startsection{subsection}{2}{0pt}{5pt}{1pt}{\normalsize\bfseries\color{fmdark}}}
+\makeatother
+
+\input{results_macros.tex}
+\newcommand{\appurl}{https://groupz-risk-parity-trend.streamlit.app}
+\newcommand{\repourl}{https://github.com/paul2108/04_Financial-Modelin-Group-projects}
+
+\begin{document}
+
+% ------------------------------------------------------------------ cover (not counted)
+\begin{titlepage}
+\thispagestyle{empty}
+\vspace*{2.5cm}
+{\color{fmdark}\rule{\linewidth}{1.2pt}}\\[8pt]
+{\Huge\bfseries\color{fmdark} Risk Parity + Trend}\\[6pt]
+{\Large A lower-drawdown alternative to the 60/40 portfolio}\\[4pt]
+{\large Investor prospectus \textbullet{} Model portfolio of six asset-class ETFs}\\
+{\color{fmdark}\rule{\linewidth}{1.2pt}}
+\vspace{1.4cm}
+
+\begin{tabular}{@{}ll@{}}
+\textbf{Course} & Financial Modeling, Nova School of Business and Economics\\
+\textbf{Moodle group} & Group Z\\[4pt]
+\textbf{Members} & Gabriel Depraz (XXXXX)\\
+ & Marwan El-shazly (XXXXX)\\
+ & Bruno Francisco Barth (79727)\\
+ & Tim Jonas Trompa (64287)\\
+ & Paul Kuehl (64253)\\
+ & Felix Schoenstein (80555)\\[4pt]
+\textbf{Date} & 20 November 2026\\[4pt]
+\textbf{Interactive app} & \url{\appurl}\\
+\textbf{Code \& notebook} & \url{\repourl}\\
+\end{tabular}
+
+\vfill
+\small\textit{Backtest period \res{sample_start}--\res{sample_end}. Past performance, in particular
+simulated past performance, is not a reliable indicator of future results. This document was prepared for a
+university course and is not investment advice.}
+\end{titlepage}
+\setcounter{page}{1}
+
+% ------------------------------------------------------------------ 1
+\section{The strategy at a glance}
+\input{sections/s1_glance.tex}
+
+\section{Who the portfolio is for}
+\input{sections/s2_clients.tex}
+
+\section{What the portfolio holds}
+\input{sections/s3_holdings.tex}
+
+\section{How capital is allocated}
+\input{sections/s4_rule.tex}
+
+\section{Data and backtest assumptions}
+\input{sections/s5_data.tex}
+
+\section{Historical performance}
+\input{sections/s6_results.tex}
+
+\section{Implementation and costs}
+\input{sections/s7_implementation.tex}
+
+\section{Risks and limitations}
+\input{sections/s8_risks.tex}
+
+\section{Interactive app}
+\input{sections/s9_app.tex}
+
+{\small
+\bibliographystyle{plainnat}
+\setlength{\bibsep}{1pt}
+\renewcommand{\refname}{References}
+\bibliography{references}
+}
+
+\section*{Appendix: sources of figures}
+{\footnotesize
+Every number, table and figure in this prospectus is computed in the notebook
+\texttt{GroupZ\_RiskParity\_Trend.ipynb}. Click a value in the text to jump to its row here, and click a page
+number to jump back. The notebook link opens the section that computes the value. YF = Yahoo Finance via the
+\texttt{yfinance} API, daily adjusted close prices.\par
+\sourcestable}
+
+\end{document}

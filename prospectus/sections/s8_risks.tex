@@ -13,7 +13,8 @@ between \res{loo_sharpe_min} and \res{loo_sharpe_max} (worst without \res{loo_wo
 and a maximum drawdown no worse than \res{loo_maxdd_worst}, so no single holding drives the result.
 \item \textbf{Data snooping.} The 10-month average and the one-year risk window are fixed in advance from the literature. Across
 all \res{heat_n} combinations of 6--12 months and 3, 6 or 12 months of risk data, the Sharpe ratio stays between \res{heat_min}
-and \res{heat_max} (Figure~\ref{fig:sensitivity}): a plateau, not a lucky spike.
+and \res{heat_max} (Figure~\ref{fig:sensitivity}): a plateau, not a lucky spike. The machine-learning variants of
+Section~9 were judged by gates fixed before the first run, so they could not be tuned towards a better backtest.
 \item \textbf{Short sample, model and data risk.} \res{sample_years} years contain only three major crises; the strategy's
 results depend on how future crises unfold. Covariances are estimated with error, Yahoo Finance revises adjusted prices
 occasionally, and the backtest assumes trading at closing prices without taxes.

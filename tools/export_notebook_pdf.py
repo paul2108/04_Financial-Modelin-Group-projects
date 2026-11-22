@@ -57,6 +57,21 @@ def prepare(nb):
             src = re.sub(r"\[!\[Open In Colab\][^\n]*\n?", "", src)
             cell.source = src
         elif cell.cell_type == "code":
+            # progress bars write every update as a separate stream output starting with a carriage return:
+            # merge consecutive stream outputs and keep only the final state of each rewritten line
+            merged = []
+            for out in cell.get("outputs", []):
+                if (out.get("output_type") == "stream" and merged and merged[-1].get("output_type") == "stream"
+                        and merged[-1]["name"] == out["name"]):
+                    merged[-1]["text"] += out["text"]
+                else:
+                    merged.append(out)
+            for out in merged:
+                if out.get("output_type") == "stream":
+                    lines = [ln.split("\r")[-1] for ln in out["text"].replace("\r\n", "\n").split("\n")]
+                    # block characters of progress bars are missing in the LaTeX monospace font
+                    out["text"] = "\n".join(lines).translate(str.maketrans("█▏▎▍▌▋▊▉﹪", "########%"))
+            cell["outputs"] = merged
             for out in cell.get("outputs", []):
                 data = out.get("data", {})
                 if "text/html" in data and "<table" in data["text/html"]:

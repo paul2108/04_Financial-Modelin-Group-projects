@@ -21,13 +21,15 @@ ASSET_COLORS = {"SPY": "#2a78d6", "EFA": "#eb6834", "IEF": "#1baf7a", "VNQ": "#e
                 "DBC": "#e87ba4", "GLD": "#008300", "CASH": "#a8a79f"}
 DEFAULTS = {"use_trend": True, "sma": sc.SMA_WINDOW, "cov": sc.COV_WINDOW, "weighting": sc.WEIGHTING,
             "cost": sc.COST_BPS, "bench": "60/40 (60% SPY, 40% AGG)", "start_year": 2007,
-            "assets": list(sc.RISKY_ASSETS)}
+            "assets": list(sc.RISKY_ASSETS), "overlay": "none"}
 BENCHMARKS = ["60/40 (60% SPY, 40% AGG)", "S&P 500 total return", "Equal weight 1/N (no trend filter)"]
 WEIGHTINGS = {"erc": "Risk parity (equal risk contribution)", "inverse_vol": "Inverse volatility",
               "equal": "Equal weights (1/N)"}
 LABELS = {"use_trend": "trend filter", "sma": "moving-average length", "cov": "risk window",
           "weighting": "weighting scheme", "cost": "transaction cost", "bench": "benchmark",
-          "start_year": "start year", "assets": "asset classes"}
+          "start_year": "start year", "assets": "asset classes", "overlay": "machine-learning overlay"}
+OVERLAYS = {"none": "None (prospectus strategy)", "hmm": "HMM regime filter (machine learning)",
+            "vol": "Volatility rule (simple baseline)"}
 
 
 def reset_defaults():
@@ -45,13 +47,30 @@ def load_market_data(start: str, end: str):
     return data, retrieved
 
 
-def evaluate(data, assets, cov, sma, use_trend, weighting, cost, bench, start_year):
+@st.cache_data(ttl=24 * 3600, show_spinner="Training the hidden Markov model walk-forward (about 10-20 s) ...")
+def regime_signals(start: str, end: str):
+    """Risk-off signals of Section 9 of the notebook for all decision dates (computed once, then cached)."""
+    data, _ = load_market_data(start, end)
+    prices = sc.clean_prices(sc.download_prices([sc.MARKET], sc.HMM_CFG.start, end))[sc.MARKET].dropna()
+    features = sc.regime_features(prices, sc.HMM_CFG.vol_window)
+    t0 = sc.first_decision_date(data, sc.RISKY_ASSETS, sc.COV_WINDOW, sc.SMA_WINDOW)
+    dates = data.prices_m.index[data.prices_m.index >= t0]
+    p_turb = sc.hmm_regime_probs(features, dates, sc.HMM_CFG, progress=False)
+    return {"hmm": p_turb > sc.HMM_CFG.prob_threshold,
+            "vol": sc.vol_rule_signal(features, dates, sc.HMM_CFG.vol_quantile)}
+
+
+def evaluate(data, assets, cov, sma, use_trend, weighting, cost, bench, start_year, overlay="none", signals=None):
     """Run strategy + benchmark exactly as in the notebook and return returns, weights and metrics."""
     base_t0 = sc.first_decision_date(data, sc.RISKY_ASSETS, sc.COV_WINDOW, sc.SMA_WINDOW)
     feasible = sc.first_decision_date(data, assets, cov, sma if use_trend else 1)
     start = max(base_t0, feasible, pd.Timestamp(f"{start_year - 1}-12-31"))
     run = sc.run_strategy(data, assets, cov, sma, use_trend, weighting, cost, start,
                           benchmark_weights=sc.BENCHMARK_6040)
+    if overlay != "none":      # Section 9: halve the growth assets in risk-off months
+        W = sc.apply_risk_off(run["weights"], signals[overlay], sc.HMM_CFG.risk_off_scale)
+        res = sc.backtest(W, data, cost)
+        run.update(weights=W, result=res, returns=res["net"].rename("Strategy"))
     r = run["returns"]
     rf = data.rf_m.loc[r.index]
     market = data.rets_m[sc.MARKET].loc[r.index]
@@ -73,9 +92,10 @@ def evaluate(data, assets, cov, sma, use_trend, weighting, cost, bench, start_ye
 
 
 @st.cache_data(ttl=24 * 3600, show_spinner="Running the backtest ...")
-def cached_evaluate(start, end, assets, cov, sma, use_trend, weighting, cost, bench, start_year):
+def cached_evaluate(start, end, assets, cov, sma, use_trend, weighting, cost, bench, start_year, overlay):
     data, _ = load_market_data(start, end)
-    return evaluate(data, list(assets), cov, sma, use_trend, weighting, cost, bench, start_year)
+    signals = regime_signals(start, end) if overlay != "none" else None
+    return evaluate(data, list(assets), cov, sma, use_trend, weighting, cost, bench, start_year, overlay, signals)
 
 
 def run_default(data):
@@ -162,7 +182,7 @@ def main():
 
     with st.sidebar:
         st.header("Assumptions")
-        st.caption("The defaults reproduce Table 1 of the prospectus.")
+        st.caption("The defaults reproduce Table 2 of the prospectus.")
         st.toggle("Trend filter (move assets below their moving average into T-bills)", key="use_trend")
         st.slider("Moving-average length (months)", 4, 12, key="sma", disabled=not st.session_state.use_trend)
         st.select_slider("Risk-estimation window (trading days)", options=[63, 126, 252, 504], key="cov")
@@ -172,6 +192,10 @@ def main():
         st.slider("Start of the backtest (year)", 2007, 2024, key="start_year")
         st.multiselect("Asset classes held", sc.RISKY_ASSETS, key="assets",
                        format_func=lambda a: f"{a} – {sc.ASSET_NAMES[a]}")
+        st.radio("Machine-learning overlay (halves equities, REITs and commodities in risk-off months)",
+                 list(OVERLAYS), format_func=OVERLAYS.get, key="overlay",
+                 help="Section 9 of the notebook: walk-forward hidden Markov model vs a simple volatility rule. "
+                      "Combine with the trend filter on or off to reproduce variants A-D.")
         st.button("Reset to prospectus defaults", on_click=reset_defaults, width="stretch")
 
     ss = st.session_state
@@ -186,8 +210,13 @@ def main():
                  f"within a few minutes. Please reload the page.\n\nDetails: {exc}")
         st.stop()
 
-    res = cached_evaluate(sc.START, sc.END, tuple(ss.assets), ss.cov, ss.sma, ss.use_trend, ss.weighting,
-                          float(ss.cost), ss.bench, ss.start_year)
+    try:
+        res = cached_evaluate(sc.START, sc.END, tuple(ss.assets), ss.cov, ss.sma, ss.use_trend, ss.weighting,
+                              float(ss.cost), ss.bench, ss.start_year, ss.overlay)
+    except Exception as exc:  # fallback: the overlay could not be computed -> show the strategy without it
+        st.warning(f"The machine-learning overlay could not be computed ({exc}). Showing the strategy without it.")
+        res = cached_evaluate(sc.START, sc.END, tuple(ss.assets), ss.cov, ss.sma, ss.use_trend, ss.weighting,
+                              float(ss.cost), ss.bench, ss.start_year, "none")
     s, b = res["summary"], res["bench_summary"]
     bench_label = ss.bench.split(" (")[0] if not ss.bench.startswith("Equal") else "1/N"
     changed = [k for k, v in DEFAULTS.items() if ss[k] != v]
@@ -237,6 +266,9 @@ def main():
 * **Costs:** cost × turnover, where turnover = Σ|target weight − drifted weight|. The 60/40 benchmark pays the same cost.
 * **Measures:** average return ×12, volatility ×√12, Sharpe ratio on excess returns, beta (not annualised) and
   Jensen's alpha against the S&P 500 total return, information ratio = annualised active return / tracking error.
+* **Machine-learning overlay (optional):** a 2-state hidden Markov model on daily S&P 500 returns and volatility,
+  re-estimated every December on data up to then; the filtered probability uses past data only. In risk-off months
+  the growth assets are halved. Same gates and comparison as Section 9 of the notebook.
 * The code is identical to the notebook's (`strategy_core.py` is generated from it): [{sc.REPO_URL}]({sc.REPO_URL})
 """)
 

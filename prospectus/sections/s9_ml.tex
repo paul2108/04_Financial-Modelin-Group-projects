@@ -1,0 +1,26 @@
+\textbf{Question and model.} We tested whether machine learning detects stressed markets better than the trend
+filter. A two-state Gaussian hidden Markov model (HMM; \citealp{hamilton1989,rabiner1989}) learns a calm and a
+turbulent regime from daily S\&P 500 returns and volatility since \res{hmm_data_start}; regime models of this kind are
+established in asset allocation \citep{ang2002,nystrup2018}. To avoid look-ahead, the model is re-estimated every
+December on past data only, and each month uses the \emph{filtered} probability of the turbulent state given data up
+to that day. Smoothed or Viterbi state paths, which use future data and make many published HMM backtests look better
+than they are, are never used for decisions. In risk-off months the growth assets (SPY, EFA, VNQ, DBC) are halved.
+A simple volatility rule serves as non-ML baseline. Before the first run we fixed all thresholds and three promotion
+gates: Sharpe ratio at least that of the base strategy, a drawdown no deeper, and a better return in at least two of
+the three stress periods.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Machine-learning variants, \res{sample_start}--\res{sample_end}, net of \res{cost_bps} per unit of turnover}\label{tab:ml}
+\input{tables/tab_ml.tex}\resmark{tab_ml}
+\end{table}
+
+\textbf{Result.} The HMM flags \res{ml_recall_hmm} of the \res{ml_n_stress} stress months (S\&P 500 down more than
+\res{ml_stress_threshold} in the next month), more than the trend signal (\res{ml_recall_trend}). But only \res{ml_precision_hmm} of its
+alarms are followed by such a fall, and it is risk-off in \res{ml_riskoff_hmm} of all months. Replacing the trend filter
+(C) lowers the Sharpe ratio to \res{ml_c_sharpe} and deepens the drawdown to \res{ml_c_max_dd}, because the trend filter
+also exits Treasuries when they fall. As an overlay (D) the HMM trims the drawdown to \res{ml_d_max_dd} but costs return
+through extra cash and turnover (Sharpe \res{ml_d_sharpe}). No variant passes the gates (C \res{ml_c_verdict},
+D \res{ml_d_verdict}); the result is the same for every random start and similar with three states
+(\res{ml_3state_sharpe}). For our client this is a useful negative result: better crisis \emph{prediction} is not
+automatically a better \emph{portfolio}, so the prospectus strategy stays rule-based.

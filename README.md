@@ -4,6 +4,8 @@ An investor prospectus, a backtest notebook and an interactive app for a simple,
 six asset-class ETFs (SPY, EFA, IEF, VNQ, DBC, GLD), **equal risk contribution** weights solved with
 `scipy.optimize.fsolve`, and a **10-month trend filter** that moves weak asset classes into T-bills.
 Rebalanced monthly and compared with a 60/40 portfolio, net of transaction costs.
+A machine-learning extension (notebook Section 9) tests a walk-forward hidden Markov model as regime filter against
+the trend filter and a simple volatility rule, with promotion gates fixed before the first run.
 
 | | |
 |---|---|

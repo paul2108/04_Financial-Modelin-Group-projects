@@ -12,8 +12,9 @@ Backtest & \res{sample_start}--\res{sample_end} (\res{sample_years} years), mont
 Key results & Volatility \res{strat_ann_vol} vs \res{b6040_ann_vol} (60/40) $\cdot$ maximum drawdown \res{strat_max_dd} vs
 \res{b6040_max_dd} $\cdot$ Sharpe ratio \res{strat_sharpe} vs \res{b6040_sharpe} $\cdot$ average return \res{strat_ann_mean} vs
 \res{b6040_ann_mean} p.a. $\cdot$ 2008: \res{strat_ret_2008} vs \res{b6040_ret_2008}.\\
-ML check & A walk-forward hidden Markov model as alternative risk signal was tested against pre-registered gates
-and rejected (Sharpe ratio \res{ml_c_sharpe} replacing, \res{ml_d_sharpe} added to the trend filter; Section~9).\\
+ML check & A walk-forward hidden Markov model, Hierarchical Risk Parity and supervised classifiers using HMM states
+and FinBERT tone of FOMC statements were tested against pre-registered gates; none beat the simple rule
+(classifier AUC \res{ext_auc_min}--\res{ext_auc_max}; Section~9).\\
 \end{tabularx}
 \end{tcolorbox}
 \vspace{-2pt}

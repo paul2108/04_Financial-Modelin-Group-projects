@@ -14,7 +14,15 @@ and a maximum drawdown no worse than \res{loo_maxdd_worst}, so no single holding
 \item \textbf{Data snooping.} The 10-month average and the one-year risk window are fixed in advance from the literature. Across
 all \res{heat_n} combinations of 6--12 months and 3, 6 or 12 months of risk data, the Sharpe ratio stays between \res{heat_min}
 and \res{heat_max} (Figure~\ref{fig:sensitivity}): a plateau, not a lucky spike. The machine-learning variants of
-Section~9 were judged by gates fixed before the first run, so they could not be tuned towards a better backtest.
+Section~9 were judged by gates fixed before the first run, so they could not be tuned towards a better backtest; none of
+them was adopted.
+\item \textbf{Statistical confidence.} In a circular block bootstrap \citep{politis1992} of several thousand resampled histories
+(12-month blocks) the strategy's maximum drawdown is smaller than that of 60/40 in \res{ext_boot_p_mdd} of draws, while
+its Sharpe ratio is higher in only \res{ext_boot_p_sharpe}: the lower drawdown is robust, the risk-adjusted return is the
+same. The Sharpe ratio is similar in both halves of the sample (\res{ext_sub1_sharpe_a} and \res{ext_sub2_sharpe_a}).
+\item \textbf{Rebalancing day.} Month-end was the most favourable of four tested rebalancing days. Rebalancing 0, 5, 10 or
+15 trading days before month-end gives Sharpe ratios between \res{ext_offset_sharpe_min} and \res{ext_offset_sharpe_max}
+and drawdowns of up to \res{ext_offset_mdd_worst}, still far smaller than those of 60/40.
 \item \textbf{Short sample, model and data risk.} \res{sample_years} years contain only three major crises; the strategy's
 results depend on how future crises unfold. Covariances are estimated with error, Yahoo Finance revises adjusted prices
 occasionally, and the backtest assumes trading at closing prices without taxes.

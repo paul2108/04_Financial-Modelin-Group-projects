@@ -5,7 +5,11 @@ six asset-class ETFs (SPY, EFA, IEF, VNQ, DBC, GLD), **equal risk contribution**
 `scipy.optimize.fsolve`, and a **10-month trend filter** that moves weak asset classes into T-bills.
 Rebalanced monthly and compared with a 60/40 portfolio, net of transaction costs.
 A machine-learning extension (notebook Section 9) tests a walk-forward hidden Markov model as regime filter against
-the trend filter and a simple volatility rule, with promotion gates fixed before the first run.
+the trend filter and a simple volatility rule, with promotion gates fixed before the first run. Sections 9.6–9.13 add
+Hierarchical Risk Parity, walk-forward classifiers (logistic regression, gradient boosting) with HMM states, macro data
+and the FinBERT tone of FOMC statements as features, leverage to a volatility target, and robustness checks (block
+bootstrap, rebalancing day, subsamples). A full run takes 15–30 minutes and needs internet access to Yahoo Finance,
+federalreserve.gov and Hugging Face. Background: `docs/handover/`.
 
 | | |
 |---|---|

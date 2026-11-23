@@ -33,7 +33,7 @@ app:             ## start the Streamlit app locally
 	$(PY) -m streamlit run app/streamlit_app.py
 
 pdf:             ## build the prospectus PDF with tectonic
-	cd prospectus && tectonic -X compile --keep-logs main.tex && cp main.pdf GroupZ_Prospectus.pdf
+	cd prospectus && tectonic -X compile --keep-logs --keep-intermediates main.tex && cp main.pdf GroupZ_Prospectus.pdf
 
 check:           ## check that every number in the prospectus comes from the notebook register
 	$(PY) tools/check_numbers.py

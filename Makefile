@@ -2,6 +2,9 @@
 PY      := .venv/bin/python
 NB      := notebook/GroupZ_RiskParity_Trend.ipynb
 export MPLCONFIGDIR := $(CURDIR)/.venv/.mplconfig
+# .venv/bin first: jupyter and the "python3" kernel then use the project's .venv, even if another
+# environment (e.g. a globally activated venv) comes first in the shell's PATH
+export PATH := $(CURDIR)/.venv/bin:$(PATH)
 
 .PHONY: help venv core test test-all notebook notebook-pdf app pdf check all clean
 

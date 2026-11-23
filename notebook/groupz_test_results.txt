@@ -1,5 +1,5 @@
-Group Z extended tests (Sections 9.6-9.13) - results
-Data retrieved: 2026-11-23 20:33 UTC
+Group Z extended tests (Sections 9.6-9.21) - results
+Data retrieved: 2026-11-23 22:35 UTC
 Sample: Mar 2007-Oct 2026, costs 10 bps
 
 === Test configuration ===
@@ -75,7 +75,7 @@ A levered to 7% vol               12.2          0.3                      -6.5   
 A levered to 10% vol              16.2          0.3                      -9.4      46.5
 
 === 9.10 FinBERT model revision (Hugging Face commit, for reproducibility) ===
-ProsusAI/finbert @ not loaded (all statements taken from the cache)
+ProsusAI/finbert @ not loaded (all statements taken from the cache) (device: mps)
 
 === 9.10 FinBERT tone of FOMC statements by year (178 statements; tone = share positive - share negative) ===
          count  mean   min  max
@@ -107,21 +107,21 @@ release
 with HMM|logit        0.517  0.253          0.345
 with HMM|boost        0.503  0.281          0.420
 without HMM|logit     0.513  0.250          0.243
-without HMM|boost     0.501  0.280          0.433
+without HMM|boost     0.502  0.280          0.430
 with HMM + FOMC|logit 0.518  0.255          0.362
-with HMM + FOMC|boost 0.497  0.283          0.452
+with HMM + FOMC|boost 0.498  0.283          0.452
 base rate             0.500  0.247          0.000
 
 === 9.11 Drop in out-of-sample AUC when a feature group is shuffled (higher = more important) ===
                      logit | with HMM  boost | with HMM  logit | with HMM + FOMC  boost | with HMM + FOMC
 HMM probabilities              0.0082            0.0227                   0.0029                   0.0031
 distance from trend           -0.0023            0.0068                  -0.0033                   0.0042
-momentum                      -0.0007            0.0044                  -0.0006                  -0.0103
+momentum                      -0.0007            0.0044                  -0.0006                  -0.0102
 asset volatility              -0.0119            0.0069                  -0.0136                  -0.0014
 yield-curve slope             -0.0004           -0.0010                  -0.0003                  -0.0022
 VIX                            0.0211            0.0044                   0.0155                   0.0027
 credit stress                 -0.0048            0.0155                  -0.0098                   0.0058
-asset dummies                  0.0178            0.0088                   0.0220                   0.0042
+asset dummies                  0.0178            0.0087                   0.0220                   0.0042
 FOMC tone (FinBERT)               NaN               NaN                  -0.0024                  -0.0072
 
 === 9.11 Classifier variants, Jan 2010-Oct 2026 (same months for all), net ===
@@ -209,3 +209,143 @@ G without HMM (boost)                           classifier    False   0.58 -15.4
 G with HMM + FOMC tone (boost)                  classifier    False   0.52 -15.54    from 2010
 A levered to 7% vol                    leverage (vs 60/40)    False   0.65 -12.06  full sample
 A levered to 10% vol                   leverage (vs 60/40)    False   0.64 -16.87  full sample
+
+=== Improvement-test configuration ===
+hysteresis_band = 0.02
+no_trade_band = 0.02
+turnover_cut = 0.25
+band_grid = (0.01, 0.02, 0.03)
+cost_check_bps = (20.0, 50.0)
+tranche_offsets = (0, 5, 10, 15)
+proxy_tickers = (('SPY', 'VFINX'), ('EFA', 'VEURX+VPACX'), ('IEF', 'VFITX'), ('VNQ', 'FRESX'), ('DBC', '^SPGSCI'), ('AGG', 'VBMFX'))
+proxy_start = 1989-01-01
+proxy_end = 2007-03-01
+proxy_last_decision = 2007-01-31
+proxy_stress = (('1994 bond sell-off', '1994-02-28', '1994-11-30'), ('Russia / LTCM', '1998-07-31', '1998-09-30'), ('Dot-com bear market', '2000-09-30', '2002-09-30'))
+tip_ticker = TIP
+lev_target = 0.1
+lev_spreads = (0.0, 0.001, 0.0025, 0.005)
+lev_caps = (4.0, 2.0)
+fx_ticker = EURUSD=X
+eur_rate_fred = IR3TIB01EZM156N
+hedged_sleeves = ('IEF', 'AGG', 'CASH')
+
+=== 9.15 Performance of the turnover variants (net of 10 bps) ===
+                       CAGR %  Vol %  Sharpe  Max DD %  Worst 12m %  Final $1  Turnover % p.a.
+A: Trend (base)          4.59   4.71    0.66     -5.65        -5.65      2.42           215.68
+J: hysteresis 2%         4.44   4.93    0.60     -5.62        -3.59      2.35           125.88
+K: no-trade band 2 pp    4.62   4.74    0.66     -5.82        -5.82      2.43           203.47
+L: hysteresis + band     4.45   4.92    0.60     -5.61        -3.71      2.35           113.51
+
+=== 9.15 Turnover, costs and the 2020 rebound ===
+                       Turnover % p.a.  Turnover vs A %  trend switches  break-even bps  Sharpe @20bps  Sharpe @50bps  2020 return %
+A: Trend (base)                 215.68             0.00          216.00            7.60           0.61           0.47           4.76
+J: hysteresis 2%                125.88           -41.63          131.00             NaN           0.57           0.50           4.73
+K: no-trade band 2 pp           203.47            -5.66          216.00            8.21           0.62           0.48           5.17
+L: hysteresis + band            113.51           -47.37          131.00             NaN           0.58           0.51           5.12
+60/40                              NaN              NaN             NaN             NaN           0.67           0.66          14.62
+
+=== 9.15 Promotion gates (reference: A) ===
+                      Sharpe Sharpe A Sharpe >= A MDD % MDD A % MDD not deeper stress wins PROMOTED turnover >= 25% lower
+J: hysteresis 2%        0.60     0.66       False -5.62   -5.65           True      2 of 3    False                  True
+K: no-trade band 2 pp   0.66     0.66        True -5.82   -5.65          False      3 of 3    False                 False
+L: hysteresis + band    0.60     0.66       False -5.61   -5.65           True      2 of 3    False                  True
+
+=== 9.15 Sensitivity of variant L to the band sizes (shown, not used to choose) ===
+               Sharpe  Max DD %  Turnover % p.a.
+b = 1% c = 1%    0.74     -5.22           143.85
+       c = 2%    0.73     -5.28           138.05
+       c = 3%    0.75     -5.39           136.86
+b = 2% c = 1%    0.61     -5.60           118.36
+       c = 2%    0.60     -5.61           113.51
+       c = 3%    0.62     -5.61           111.26
+b = 3% c = 1%    0.70     -5.33            91.87
+       c = 2%    0.70     -5.59            87.57
+       c = 3%    0.71     -5.48            84.20
+
+=== 9.16 Single tranches and the combined portfolio (daily engine, month-end values, net of 10 bps) ===
+                                  CAGR %  Vol %  Sharpe  Max DD %  Worst 12m %  Final $1
+A: Trend (base)                     4.59   4.71    0.66     -5.65        -5.65      2.42
+tranche 0 days before month-end     4.59   4.71    0.66     -5.65        -5.65      2.42
+tranche 5 days before month-end     4.48   4.90    0.61     -6.83        -6.75      2.37
+tranche 10 days before month-end    4.25   4.85    0.57     -7.47        -6.22      2.27
+tranche 15 days before month-end    4.21   4.80    0.57     -7.10        -5.36      2.25
+M: 4 tranches                       4.39   4.67    0.62     -6.01        -6.01      2.33
+
+=== 9.16 Range of the single-day runs of Section 9.12 and turnover of the tranche portfolio ===
+                          Sharpe  Max DD %  Turnover % p.a.
+single-day runs: lowest     0.55     -8.92              NaN
+single-day runs: mean       0.61     -7.31              NaN
+single-day runs: highest    0.66     -5.65              NaN
+M: 4 tranches               0.62     -6.01           215.39
+
+=== 9.16 Promotion gates (reference: A) ===
+              Sharpe Sharpe A Sharpe >= A MDD % MDD A % MDD not deeper stress wins PROMOTED inside single-day range
+M: 4 tranches   0.62     0.66       False -6.01   -5.65          False      1 of 3    False                    True
+
+=== 9.17 Out-of-sample test on proxies, Nov 1992-Feb 2007 (172 months, five asset classes, net of 10 bps; stress columns in %) ===
+                             CAGR %  Vol %  Sharpe  Max DD %  Worst 12m %  1994 bond sell-off  Russia / LTCM  Dot-com bear market
+A: Trend (proxies)             9.76   4.72    1.21     -4.29         0.13                0.86           1.71                17.32
+H: averaged trend (proxies)    9.24   4.60    1.13     -4.29        -1.62               -0.89           1.87                17.58
+60/40 (proxies)                9.23   8.42    0.65    -23.50       -12.70               -3.96          -4.18               -23.50
+
+=== 9.17 Promotion gates of variant H out of sample (reference: A on the same proxy data) ===
+                Sharpe Sharpe A Sharpe >= A MDD % MDD A % MDD not deeper stress wins PROMOTED
+H out of sample   1.13     1.21       False -4.29   -4.29           True      2 of 3    False
+
+=== 9.18 Seven asset classes incl. TIP (net of 10 bps) ===
+                     CAGR %  Vol %  Sharpe  Max DD %  Worst 12m %  Final $1  Turnover % p.a.
+A: Trend (base)        4.59   4.71    0.66     -5.65        -5.65      2.42           215.68
+N: + TIP (7 assets)    4.29   4.20    0.66     -5.34        -4.98      2.29           211.56
+
+=== 9.18 Average target weights (%) ===
+      A: Trend (base)  N: + TIP (7 assets)
+CASH             31.7                 30.2
+DBC               6.2                  5.0
+EFA               6.4                  5.3
+GLD               7.8                  6.2
+IEF              33.1                 22.1
+SPY               9.1                  7.6
+TIP               0.0                 18.9
+VNQ               5.6                  4.6
+
+=== 9.18 Cumulative return in the stress periods (%) ===
+                     Financial crisis  Covid crash  Inflation and rate shock  Recovery
+A: Trend (base)                   9.2          0.1                      -3.4      33.6
+N: + TIP (7 assets)               7.1         -0.6                      -3.3      28.4
+
+=== 9.18 Promotion gates (reference: A) ===
+                    Sharpe Sharpe A Sharpe >= A MDD % MDD A % MDD not deeper stress wins PROMOTED
+N: + TIP (7 assets)   0.66     0.66        True -5.34   -5.65           True      1 of 3    False
+
+=== 9.19 Strategy levered to 10% volatility: financing cost and leverage cap (60/40: CAGR 7.9%, Sharpe 0.67, Max DD -32.3%) ===
+                        CAGR %  Vol %  Sharpe  Max DD %  avg leverage
+cap 4x T-bills + 0.00%    7.66   9.60    0.66    -16.57          2.20
+       T-bills + 0.10%    7.61   9.60    0.66    -16.63          2.20
+       T-bills + 0.25%    7.52   9.59    0.65    -16.72          2.20
+       T-bills + 0.50%    7.39   9.59    0.64    -16.87          2.20
+cap 2x T-bills + 0.00%    6.94   8.02    0.69    -11.10          1.79
+       T-bills + 0.10%    6.90   8.02    0.69    -11.13          1.79
+       T-bills + 0.25%    6.85   8.02    0.68    -11.17          1.79
+       T-bills + 0.50%    6.76   8.02    0.67    -11.23          1.79
+
+=== 9.20 Strategy and 60/40 for a EUR investor, unhedged only (EUR interest rate not available) ===
+                    CAGR %  Vol %  Max DD %
+Strategy, unhedged    5.49   8.33    -11.66
+60/40, unhedged       8.83  10.03    -26.36
+
+=== 9.21 Summary of the improvement tests (each against A on the same data) ===
+                                    type PROMOTED Sharpe Sharpe A MDD % MDD A % stress wins
+J: hysteresis 2%                turnover    False   0.60     0.66 -5.62   -5.65      2 of 3
+K: no-trade band 2 pp           turnover    False   0.66     0.66 -5.82   -5.65      3 of 3
+L: hysteresis + band            turnover    False   0.60     0.66 -5.61   -5.65      2 of 3
+M: 4 tranches                rebalancing    False   0.62     0.66 -6.01   -5.65      1 of 3
+H out of sample (proxies)  out-of-sample    False   1.13     1.21 -4.29   -4.29      2 of 3
+N: + TIP (7 assets)             universe    False   0.66     0.66 -5.34   -5.65      1 of 3
+
+=== 9.21 Deflated Sharpe ratio of the base strategy ===
+variants tried                                                  24.000
+variants with full-sample returns (for the spread)              22.000
+Sharpe ratio of A (annualised)                                   0.658
+expected best Sharpe ratio of unskilled variants (annualised)    0.132
+deflated Sharpe ratio = P(true Sharpe > 0)                       0.990

@@ -17,3 +17,5 @@ prospectus/*.fls
 prospectus/*.fdb_latexmk
 prospectus/*.synctex.gz
 prospectus/main.pdf
+# Local download/score cache of the notebook (Section 9.10)
+notebook/cache/

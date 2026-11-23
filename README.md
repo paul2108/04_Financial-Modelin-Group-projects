@@ -8,7 +8,7 @@ A machine-learning extension (notebook Section 9) tests a walk-forward hidden Ma
 the trend filter and a simple volatility rule, with promotion gates fixed before the first run. Sections 9.6–9.13 add
 Hierarchical Risk Parity, walk-forward classifiers (logistic regression, gradient boosting) with HMM states, macro data
 and the FinBERT tone of FOMC statements as features, leverage to a volatility target, and robustness checks (block
-bootstrap, rebalancing day, subsamples). A full run takes 15–30 minutes and needs internet access to Yahoo Finance,
+bootstrap, rebalancing day, subsamples). A full run takes about 2–3 minutes (about 1 minute with the local cache in `notebook/cache/`) and needs internet access to Yahoo Finance,
 federalreserve.gov and Hugging Face. Background: `docs/handover/`.
 
 | | |

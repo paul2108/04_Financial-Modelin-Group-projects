@@ -111,3 +111,15 @@ def test_risk_off_overlay_moves_growth_assets_into_cash():
     assert out.loc[idx[1], "SPY"] == pytest.approx(0.1)
     assert out.loc[idx[1], "CASH"] == pytest.approx(0.3)
     assert out.loc[idx[1], "IEF"] == 0.5  # defensive assets untouched
+
+
+def test_parallel_walk_forward_matches_serial(probs):
+    """n_jobs only changes the speed: yearly fits run in parallel (threads here, so the test runs anywhere)."""
+    from joblib import parallel_config
+    px = synthetic_index()
+    feats = sc.regime_features(px, CFG.vol_window)
+    dates = pd.date_range("2000-01-31", "2014-12-31", freq="ME")
+    with parallel_config(backend="threading"):
+        par = sc.hmm_regime_probs(feats, dates, CFG, progress=False, n_jobs=-1)
+    assert par.index.equals(probs.index)
+    np.testing.assert_allclose(par.to_numpy(), probs.to_numpy(), atol=1e-9)

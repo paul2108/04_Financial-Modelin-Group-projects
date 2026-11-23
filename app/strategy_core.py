@@ -18,6 +18,7 @@ from scipy.stats import multivariate_normal
 from hmmlearn.hmm import GaussianHMM
 from sklearn.preprocessing import StandardScaler
 from tqdm.auto import tqdm
+from joblib import Parallel, delayed
 
 
 # ---------------------------------------------------------------- parameters
@@ -448,27 +449,47 @@ def filtered_state_probs(model, scaler, X):
     return out
 
 
-def hmm_regime_probs(features, decision_dates, cfg=HMM_CFG, progress=True):
+def map_years(step, features, items, cfg, n_jobs=1):
+    """Run step(features, fit_year, dates, cfg) for every (fit_year, dates) item, in order.
+    n_jobs != 1 uses joblib worker processes; where processes are not allowed (some sandboxes) it falls back
+    to a serial loop. Results are identical either way."""
+    if n_jobs != 1:
+        try:
+            return Parallel(n_jobs=n_jobs, return_as="generator")(
+                delayed(step)(features, fy, ds, cfg) for fy, ds in items)
+        except OSError:
+            pass
+    return (step(features, fy, ds, cfg) for fy, ds in items)
+
+
+def _hmm_fit_filter(features, fit_year, dates, cfg):
+    """One walk-forward step: fit on data up to 31 Dec of `fit_year`, filtered P(turbulent) at `dates`."""
+    train = features.loc[:f"{fit_year}-12-31"]
+    model, scaler, turb = fit_hmm(train.to_numpy(), cfg)
+    upto = features.loc[:max(dates)]
+    p = pd.Series(filtered_state_probs(model, scaler, upto.to_numpy())[:, turb], index=upto.index)
+    return {t: float(p.loc[:t].iloc[-1]) for t in dates}
+
+
+def hmm_regime_probs(features, decision_dates, cfg=HMM_CFG, progress=True, n_jobs=1):
     """Walk-forward P(turbulent) at each decision date.
 
     The HMM is re-estimated once a year on all data up to 31 December (expanding window). Every decision
     date t uses the latest model fitted on or before t and the filtered probability from data up to t.
+    The yearly fits are independent, so `n_jobs` > 1 (or -1 = all cores) runs them in parallel; every fit
+    has fixed seeds, so the result is identical for any n_jobs.
     """
     groups = {}
     for t in pd.DatetimeIndex(decision_dates):
         fit_year = t.year if (t.month == 12 and t.day == 31) else t.year - 1
         groups.setdefault(fit_year, []).append(t)
     items = list(groups.items())
+    steps = map_years(_hmm_fit_filter, features, items, cfg, n_jobs)
     if progress:
-        items = tqdm(items, desc="HMM walk-forward (one fit per year)")
+        steps = tqdm(steps, total=len(items), desc="HMM walk-forward (one fit per year)")
     out = {}
-    for fit_year, dates in items:
-        train = features.loc[:f"{fit_year}-12-31"]
-        model, scaler, turb = fit_hmm(train.to_numpy(), cfg)
-        upto = features.loc[:max(dates)]
-        p = pd.Series(filtered_state_probs(model, scaler, upto.to_numpy())[:, turb], index=upto.index)
-        for t in dates:
-            out[t] = float(p.loc[:t].iloc[-1])
+    for step in steps:
+        out.update(step)
     probs = pd.Series(out, name="p_turbulent").sort_index()
     probs.index.name = "decision_date"
     return probs

@@ -1,5 +1,5 @@
 Group Z extended tests (Sections 9.6-9.21) - results
-Data retrieved: 2026-11-23 22:44 UTC
+Data retrieved: 2026-11-23 22:49 UTC
 Sample: Mar 2007-Oct 2026, costs 10 bps
 
 === Test configuration ===
@@ -107,27 +107,27 @@ release
 with HMM|logit        0.517  0.253          0.345
 with HMM|boost        0.503  0.281          0.420
 without HMM|logit     0.513  0.250          0.243
-without HMM|boost     0.502  0.280          0.430
+without HMM|boost     0.501  0.280          0.433
 with HMM + FOMC|logit 0.518  0.255          0.362
-with HMM + FOMC|boost 0.498  0.283          0.452
+with HMM + FOMC|boost 0.497  0.283          0.452
 base rate             0.500  0.247          0.000
 
 === 9.11 Drop in out-of-sample AUC when a feature group is shuffled (higher = more important) ===
                      logit | with HMM  boost | with HMM  logit | with HMM + FOMC  boost | with HMM + FOMC
 HMM probabilities              0.0082            0.0227                   0.0029                   0.0031
 distance from trend           -0.0023            0.0068                  -0.0033                   0.0042
-momentum                      -0.0007            0.0044                  -0.0006                  -0.0102
+momentum                      -0.0007            0.0044                  -0.0006                  -0.0103
 asset volatility              -0.0119            0.0069                  -0.0136                  -0.0014
 yield-curve slope             -0.0004           -0.0010                  -0.0003                  -0.0022
 VIX                            0.0211            0.0044                   0.0155                   0.0027
-credit stress                 -0.0048            0.0155                  -0.0098                   0.0058
-asset dummies                  0.0178            0.0087                   0.0220                   0.0042
-FOMC tone (FinBERT)               NaN               NaN                  -0.0024                  -0.0072
+credit stress                 -0.0048            0.0155                  -0.0098                   0.0057
+asset dummies                  0.0178            0.0088                   0.0220                   0.0042
+FOMC tone (FinBERT)               NaN               NaN                  -0.0024                  -0.0073
 
 === 9.11 Classifier variants, Jan 2010-Oct 2026 (same months for all), net ===
                                     CAGR %  Vol %  Sharpe  Max DD %  Worst 12m %  Final $1  Turnover % p.a.
 A: Trend (base)                       4.25   4.34    0.65     -5.65        -5.65      2.02           221.83
-60/40                                 9.49   9.18    0.88    -20.06       -15.85      4.60            18.31
+60/40                                 9.49   9.18    0.88    -20.06       -15.85      4.60            18.30
 F: clf replaces trend (logit)         3.83   5.59    0.44    -14.79       -11.36      1.88           344.36
 G: clf filters trend exits (logit)    4.83   6.13    0.57    -14.51       -11.82      2.21           202.71
 G without HMM (logit)                 5.02   6.19    0.59    -16.02       -13.39      2.28           131.92
@@ -291,7 +291,7 @@ H: averaged trend (proxies)    9.24   4.60    1.13     -4.29        -1.62       
 
 === 9.17 Promotion gates of variant H out of sample (reference: A on the same proxy data) ===
                 Sharpe Sharpe A Sharpe >= A MDD % MDD A % MDD not deeper stress wins PROMOTED
-H out of sample   1.13     1.21       False -4.29   -4.29          False      2 of 3    False
+H out of sample   1.13     1.21       False -4.29   -4.29           True      2 of 3    False
 
 === 9.18 Seven asset classes incl. TIP (net of 10 bps) ===
                      CAGR %  Vol %  Sharpe  Max DD %  Worst 12m %  Final $1  Turnover % p.a.
@@ -322,17 +322,21 @@ N: + TIP (7 assets)   0.66     0.66        True -5.34   -5.65           True    
                         CAGR %  Vol %  Sharpe  Max DD %  avg leverage
 cap 4x T-bills + 0.00%    7.66   9.60    0.66    -16.57          2.20
        T-bills + 0.10%    7.61   9.60    0.66    -16.63          2.20
-       T-bills + 0.25%    7.52   9.59    0.65    -16.72          2.20
+       T-bills + 0.25%    7.53   9.59    0.65    -16.72          2.20
        T-bills + 0.50%    7.39   9.59    0.64    -16.87          2.20
 cap 2x T-bills + 0.00%    6.94   8.02    0.69    -11.10          1.79
        T-bills + 0.10%    6.90   8.02    0.69    -11.13          1.79
        T-bills + 0.25%    6.85   8.02    0.68    -11.17          1.79
        T-bills + 0.50%    6.76   8.02    0.67    -11.23          1.79
 
-=== 9.20 Strategy and 60/40 for a EUR investor, unhedged only (EUR interest rate not available) ===
-                    CAGR %  Vol %  Max DD %
-Strategy, unhedged    5.49   8.33    -11.66
-60/40, unhedged       8.83  10.03    -26.36
+=== 9.20 Strategy and 60/40 for a EUR investor, Mar 2007-Jan 2026 (227 months with a EUR rate; net, EUR risk-free rate 1.1% p.a. on average) ===
+                               CAGR %  Vol %  Sharpe (EUR rf)  Max DD %  Worst 12m %
+Strategy, unhedged               5.11   8.42             0.51    -11.66        -9.76
+60/40, unhedged                  8.49  10.15             0.74    -26.36       -18.64
+Strategy, bonds + cash hedged    4.82   4.33             0.87     -5.31        -4.92
+Strategy, fully hedged           4.17   4.68             0.68     -6.61        -5.71
+60/40, bonds hedged              8.10   8.96             0.79    -26.89       -18.30
+60/40, fully hedged              7.53   9.83             0.68    -29.55       -25.12
 
 === 9.21 Summary of the improvement tests (each against A on the same data) ===
                                     type PROMOTED Sharpe Sharpe A MDD % MDD A % stress wins

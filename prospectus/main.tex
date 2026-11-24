@@ -22,6 +22,7 @@
 \usepackage{tcolorbox}
 \tcbuselibrary{skins,raster}
 \usepackage{tikz}
+\usepackage{titlesec}
 \usepackage[authoryear,round]{natbib}
 \usepackage{fancyhdr}
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black]{hyperref}
@@ -41,10 +42,14 @@
 \fancyfoot[C]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \newcommand{\sectionrule}{}
-\makeatletter
-\renewcommand\section{\@startsection{section}{1}{0pt}{8pt}{3pt}{\large\bfseries\color{fmdark}}}
-\renewcommand\subsection{\@startsection{subsection}{2}{0pt}{5pt}{1pt}{\normalsize\bfseries\color{fmdark}}}
-\makeatother
+% Section headings: navy number badge, navy title, fine pale-blue rule underneath
+\newcommand{\sectionbadge}[1]{{\setlength{\fboxsep}{2.2pt}%
+  \colorbox{fmdark}{\makebox[1.15em][c]{\normalsize\bfseries\color{white}#1}}}}
+\titleformat{\section}{\large\bfseries\color{fmdark}}{\sectionbadge{\thesection}}{0.5em}{}
+  [\vspace{1.5pt}{\color{fmlight}\titlerule[0.9pt]}]
+\titlespacing*{\section}{0pt}{9pt}{3pt}
+\titleformat{\subsection}{\normalsize\bfseries\color{fmdark}}{\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{5pt}{1pt}
 
 \input{results_macros.tex}
 % No appendix (7-page limit): every value links straight to the notebook section that computes it

@@ -16,9 +16,9 @@ import streamlit as st
 
 import strategy_core as sc
 
-COLORS = {"strategy": "#2a78d6", "benchmark": "#eb6834", "market": "#1baf7a"}
-ASSET_COLORS = {"SPY": "#2a78d6", "EFA": "#eb6834", "IEF": "#1baf7a", "VNQ": "#eda100",
-                "DBC": "#e87ba4", "GLD": "#008300", "CASH": "#a8a79f"}
+COLORS = {"strategy": "#0D366B", "benchmark": "#5B6676", "market": "#AEB7C2"}   # same palette as the prospectus
+ASSET_COLORS = {"SPY": "#0D366B", "EFA": "#3F78BF", "IEF": "#9DC0EA", "VNQ": "#4D5866",
+                "DBC": "#A7B0BC", "GLD": "#B07D1E", "CASH": "#D3D9E1"}
 DEFAULTS = {"use_trend": True, "sma": sc.SMA_WINDOW, "cov": sc.COV_WINDOW, "weighting": sc.WEIGHTING,
             "cost": sc.COST_BPS, "bench": "60/40 (60% SPY, 40% AGG)", "start_year": 2007,
             "assets": list(sc.RISKY_ASSETS), "overlay": "none"}
@@ -126,7 +126,7 @@ def chart_cumulative(res, bench_label, log):
         nav = sc.nav_from_returns(res["market"])
         fig.add_trace(go.Scatter(x=nav.index, y=nav, name="S&P 500 total return",
                                  line=dict(color=COLORS["market"], width=1.4), hovertemplate="%{y:.2f}"))
-    fig.add_hline(y=1, line_width=1, line_color="#8a8984")
+    fig.add_hline(y=1, line_width=1, line_color="#8A94A3")
     return _layout(fig, "Value of $1 invested" + (" (log scale)" if log else ""), log=log)
 
 

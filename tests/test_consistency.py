@@ -72,4 +72,11 @@ def test_app_lab_reproduces_notebook_variants():
                            leverage=p["leverage"])
         live, nb = res["returns"], rets[col]
         assert live.index.equals(nb.index), col
-        assert live.to_numpy() == pytest.approx(nb.to_numpy(), abs=1e-5), col
+        # A fresh download can differ from the notebook's in the last digits (Yahoo re-computes adjusted prices).
+        # When a price sits right on a moving average this can flip one month's trend signal, so we allow a few
+        # months to differ; an error in the calculation would change most months.
+        off = (live - nb).abs() > 1e-5
+        assert off.mean() <= 0.02, f"{col}: {off.sum()} of {len(off)} months differ"
+        s_live, s_nb = sc.performance_summary(live, data.rf_m), sc.performance_summary(nb, data.rf_m)
+        assert s_live["sharpe"] == pytest.approx(s_nb["sharpe"], abs=0.01), col
+        assert s_live["max_dd"] == pytest.approx(s_nb["max_dd"], abs=0.002), col

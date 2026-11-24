@@ -7,7 +7,7 @@ strategy before trading costs.}\label{fig:cumulative}
 
 Figure~\ref{fig:cumulative} shows the central trade-off. \$1 grew to \$\res{strat_final_value} in the strategy, to
 \$\res{b6040_final_value} in the 60/40 portfolio and to \$\res{mkt_final_value} in the S\&P 500. The strategy was ahead
-until 2014 because it avoided the 2008 crash, and it fell behind in the long equity bull market that followed. Table~\ref{tab:performance}
+until 2013 because it avoided the 2008 crash, and it fell behind in the long equity bull market that followed. Table~\ref{tab:performance}
 reports all measures.
 
 \begin{table}[!htb]
@@ -18,36 +18,45 @@ reports all measures.
 \input{tables/tab_performance.tex}\resmark{tab_performance}
 \begin{tablenotes}\footnotesize
 \item ERC = risk parity without trend filter; 1/N = equal weights without trend filter. Average return arithmetic $\times 12$;
-volatility $\times\sqrt{12}$; Sharpe ratio on excess returns over T-bills; beta not annualised; alpha $\times 12$ (Jensen's
-alpha); information ratio = annualised active return / tracking error. Turnover includes the initial purchase.
+CAGR = compound annual growth rate; volatility $\times\sqrt{12}$; Sharpe ratio on excess returns over T-bills. Beta (not
+annualised) and Jensen's alpha ($\times 12$) come from a regression of monthly excess returns on those of the S\&P 500 TR or
+the 60/40 portfolio; $t$-statistics use Newey-West standard errors \citep{newey1987}. Information ratio = annualised mean
+return in excess of 60/40 / tracking error. Turnover includes the initial purchase.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
 
 \textbf{What the measures mean for our client.}
-\begin{itemize}[leftmargin=1em]
-\item \emph{Average return} \res{strat_ann_mean} p.a. vs \res{b6040_ann_mean}: the client gives up about half of the 60/40
-return. Growth is still well above the T-bill rate of \res{rf_mean}, so the portfolio does grow, but slowly.
-\item \emph{Volatility} \res{strat_ann_vol} vs \res{b6040_ann_vol}: monthly swings are about \res{vol_ratio_6040} times those of
-60/40, the risk level of a short-to-medium bond fund rather than of a balanced fund.
-\item \emph{Sharpe ratio} \res{strat_sharpe} vs \res{b6040_sharpe}: the reward per unit of risk is the same. The strategy is not a
-better portfolio in this sense, it is a \emph{less risky} one. With a standard error of about \res{sharpe_se}
-\citep{lo2002}, the two Sharpe ratios are statistically indistinguishable.
+\begin{itemize}[leftmargin=1em,beginpenalty=10000]
+\item \emph{Return and growth:} an average return of \res{strat_ann_mean} vs \res{b6040_ann_mean} p.a., and a compound growth
+rate (CAGR), which is what the client's account actually earns, of \res{strat_cagr} vs \res{b6040_cagr}. The client keeps a
+little over half of the 60/40 return: \$1 became \$\res{strat_final_value} instead of \$\res{b6040_final_value}. Growth is still well
+above the T-bill rate of \res{rf_mean}, so the portfolio does grow, but slowly.
+\item \emph{Volatility} \res{strat_ann_vol} vs \res{b6040_ann_vol}: the typical yearly swing in value is \res{vol_ratio_6040}
+times that of 60/40, so the client's statements fluctuate about half as much.
+\item \emph{Maximum drawdown} \res{strat_max_dd} vs \res{b6040_max_dd} (S\&P 500: \res{mkt_max_dd}): the largest fall from a
+previous high that the client would have had to sit through was about a sixth of the 60/40 loss. The worst 12-month return
+was the same \res{strat_worst_12m} (60/40: \res{b6040_worst_12m}): in no 12-month window did the client lose more. For our
+client this is the measure that matters most.
+\item \emph{Sharpe ratio} \res{strat_sharpe} vs \res{b6040_sharpe}: the return earned per unit of risk taken is the same. The
+strategy is not a better portfolio in this sense, it is a \emph{less risky} one. With a standard error of about
+\res{sharpe_se} \citep{lo2002}, the two Sharpe ratios are statistically indistinguishable.
 \item \emph{Beta} \res{strat_beta_mkt} against the S\&P 500 (\res{strat_beta_bench} against 60/40): if equities fall by 10\%,
 the strategy is expected to lose only about \res{beta_mkt_loss10}\%. Its return hardly depends on the stock market.
 \item \emph{Alpha} \res{strat_alpha_mkt} p.a. against the market ($t=\res{strat_alpha_mkt_t}$) and \res{strat_alpha_bench} against
-60/40 ($t=\res{strat_alpha_bench_t}$): given its low market exposure, the strategy earned more than the CAPM predicts. The
-alpha is only borderline significant and mainly reflects returns of Treasuries, gold and commodities, which a stock-market factor does not capture.
-\item \emph{Information ratio} \res{strat_info_ratio} against 60/40, with a tracking error of \res{strat_tracking_error}: in plain
-terms, the strategy underperformed the benchmark and deviated from it a lot. A client who measures success relative to 60/40
-should not buy it; the measure that matters for our client is the drawdown.
-\item \emph{Maximum drawdown} \res{strat_max_dd} vs \res{b6040_max_dd} (S\&P 500: \res{mkt_max_dd}): the worst peak-to-trough
-loss was about a sixth of the 60/40 loss. The worst 12-month return was \res{strat_worst_12m} vs \res{b6040_worst_12m}.
+60/40 ($t=\res{strat_alpha_bench_t}$): the part of the return that the strategy's small stock-market exposure does not
+explain. It is only borderline significant and plausibly comes from Treasuries, gold and commodities, which a stock-market
+factor does not capture; the client should not rely on it as a source of outperformance.
+\item \emph{Information ratio} \res{strat_info_ratio} against 60/40, with a tracking error of \res{strat_tracking_error}: the
+tracking error measures how far the strategy's return typically strays from 60/40 in a year, the information ratio how much
+it gained per unit of that deviation. It is negative: the strategy lagged the benchmark and deviated from it a lot. A client
+who measures success relative to 60/40 should not buy it.
 \item \emph{At equal risk:} levered each month to a volatility target close to that of 60/40 (realised \res{ext_lev10_ann_vol};
-borrowing at a small spread over the T-bill rate, before taxes), the strategy would have earned \res{ext_lev10_cagr} a year against
-\res{b6040_cagr}, with a maximum drawdown of \res{ext_lev10_max_dd} against \res{b6040_max_dd}. With leverage capped at two times, which is more
-realistic for private clients, and borrowing at 10 bps over T-bills, it would have earned \res{imp_lev_cap2_s10_cagr} a year
-(Sharpe ratio \res{imp_lev_cap2_s10_sharpe}, maximum drawdown \res{imp_lev_cap2_s10_maxdd}).
+leverage capped at four times, borrowing at half a percentage point over the T-bill rate, before taxes), the strategy would
+have earned \res{ext_lev10_cagr} a year against \res{b6040_cagr}, with a maximum drawdown of \res{ext_lev10_max_dd} against
+\res{b6040_max_dd}. With leverage capped at two times, which is more realistic for private clients, and borrowing at 10 bps
+over T-bills, it would have earned \res{imp_lev_cap2_s10_cagr} a year (Sharpe ratio \res{imp_lev_cap2_s10_sharpe}, maximum
+drawdown \res{imp_lev_cap2_s10_maxdd}).
 \end{itemize}
 
 \begin{figure}[!htb]

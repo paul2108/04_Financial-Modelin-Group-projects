@@ -1,13 +1,21 @@
-\textbf{Target clientele.} Wealth managers and private banks that advise \emph{cautious to balanced private clients},
-typically aged 45--65, a few years before or at the start of retirement. These clients
-\begin{itemize}
-\item have an investment horizon of about 7--10 years and need their savings to fund withdrawals soon;
-\item are \emph{loss-averse}: a deep drawdown just before or after retirement cannot be recovered by waiting, because
-withdrawals lock in the losses (\emph{sequence-of-returns risk});
-\item accept a lower expected return in exchange for a smoother path, but still want growth above cash and inflation;
-\item value transparency: a rule they can understand and that their adviser can explain in one page.
-\end{itemize}
-A 60/40 portfolio is the natural default for such clients, which is why it is our benchmark. Its weakness is that
-equities dominate its risk: in 2008 the 60/40 portfolio lost \res{b6040_ret_2008}, in 2022 \res{b6040_ret_2022}.
-The strategy is designed for clients who would abandon a 60/40 portfolio at the bottom of such a crash.
-Investors seeking maximum long-term growth with a long horizon should hold more equities instead.
+\textbf{Who it is for.} Wealth managers and private banks that advise \emph{cautious to balanced private clients},
+typically aged 45--65, a few years before or at the start of retirement, with an investment horizon of about 7--10 years
+over which they will start drawing on their savings. For these clients a deep loss is the main danger: once withdrawals
+begin, assets are sold at low prices and the loss cannot be recovered by waiting (\emph{sequence-of-returns risk}). They
+accept a lower return for a smoother path, still want growth above cash and inflation, and want a rule that their adviser
+can explain on one page. The strategy is run in US dollars; euro-based clients use the UCITS funds and the currency hedge
+of Section~7.
+
+\textbf{Why not simply 60/40?} A 60/40 portfolio is the natural default for such clients, which is why it is our benchmark.
+Its weakness is that equities dominate its risk: it lost \res{b6040_ret_2008} in 2008 and \res{b6040_ret_2022} in 2022,
+exactly the kind of loss that makes a client sell at the bottom. The strategy is designed for clients who would abandon a
+60/40 portfolio in such a crash.
+
+\textbf{Why these six assets.} Each holding protects the client in a different economic scenario: US and international
+equities and real estate grow when the economy expands, Treasuries gain in recessions, and commodities and gold hold their
+value when inflation surprises. Nobody knows which scenario comes next, so the portfolio holds all of them, lets none of
+them dominate its risk, and moves into T-bills when an asset class is in a sustained decline.
+
+\textbf{Who should not buy it.} Clients who measure success against 60/40 or the stock market: the strategy beat 60/40 in
+only \res{years_beating_6040} of \res{n_years_cal} calendar years and lags in long bull markets. Investors seeking maximum
+long-term growth with a long horizon should hold more equities instead.

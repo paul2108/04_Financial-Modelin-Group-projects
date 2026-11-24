@@ -1,5 +1,5 @@
-\textbf{Rebalancing.} Orders are placed once a month at the closing auction of the last trading day, using the weights computed
-from that day's closing prices. All seven instruments (six ETFs and a T-bill ETF) trade billions of dollars a day, so a
+\textbf{Rebalancing.} Once a month, orders are computed shortly before the close of the last trading day and executed in the
+closing auction; the backtest idealises this by using the same closing prices for the decision and the trade. All seven instruments (six ETFs and a T-bill ETF) trade billions of dollars a day, so a
 portfolio of any realistic private-client size can be traded without moving prices. A model portfolio can be applied to
 many client accounts at once. A wealth manager can also split each portfolio into four tranches that rebalance 0, 5, 10 and
 15 trading days before month-end. The result then no longer depends on one day (Section~8); the Sharpe ratio of
@@ -14,8 +14,9 @@ typically one basis point or less and commissions are often zero, so a cost-effi
 Sharpe ratio would drop to \res{sharpe_cost50}. We tested two ways to cut turnover, both fixed before the run. Skipping weight changes below two percentage points hardly
 helps (\res{imp_k_turnover} p.a.), because most trading comes from trend switches. A band around the 10-month average, which
 sells only clearly below and buys back only clearly above it, cuts turnover to \res{imp_j_turnover} but trades later and
-lowers the Sharpe ratio to \res{imp_j_sharpe}. Neither passes our gates (Section~9), so the rule stays unchanged. T-bill
-positions can still be switched within a money-market sweep.
+lowers the Sharpe ratio to \res{imp_j_sharpe}. Neither passes our gates (Section~9), so the rule stays unchanged. The backtest
+charges costs only on the ETF side of a switch into or out of T-bills; holding the T-bill part in a money-market sweep
+rather than a T-bill ETF keeps it that way.
 
 \textbf{Euro-based clients.} US-listed ETFs are not available to EU retail investors, so the UCITS equivalents in
 Table~\ref{tab:holdings} are used. The backtest is in US dollars; a euro investor bears the EUR/USD exchange rate on the

@@ -15,6 +15,7 @@ import yfinance as yf
 import pandas as pd
 import statsmodels.api as sm
 from scipy.stats import multivariate_normal
+from scipy.stats import norm as std_normal
 from hmmlearn.hmm import GaussianHMM
 from sklearn.preprocessing import StandardScaler
 from tqdm.auto import tqdm
@@ -518,3 +519,195 @@ def apply_risk_off(weights, risk_off, scale=0.5, growth_assets=None):
     W.loc[off, "CASH"] = W.loc[off, "CASH"] + cut.sum(axis=1)
     W.attrs = dict(weights.attrs)
     return W
+
+
+# ---------------------------------------------------------------- improvement tests: building blocks (Section 9.14)
+def trend_signal_hysteresis(prices_m, window=10, band=0.02):
+    """Trend signal with a hysteresis band around the `window`-month SMA.
+
+    A held asset is sold only if its price falls below SMA x (1 - band); an asset in cash is bought back only if
+    its price rises above SMA x (1 + band); in between the previous state is kept. In the first month with a
+    moving average the plain rule (price > SMA) sets the state. NaN while the moving average is missing. Only
+    prices up to each month-end are used. With band = 0 the signal equals trend_signal().
+    """
+    sma = prices_m.rolling(window, min_periods=window).mean()
+    px, ma = prices_m.to_numpy(dtype=float), sma.to_numpy(dtype=float)
+    out = np.full(px.shape, np.nan)
+    for j in range(px.shape[1]):
+        state = np.nan
+        for i in range(px.shape[0]):
+            p, m = px[i, j], ma[i, j]
+            if np.isnan(p) or np.isnan(m):
+                continue
+            if np.isnan(state):
+                state = 1.0 if p > m else 0.0
+            elif state == 1.0 and p < m * (1.0 - band):
+                state = 0.0
+            elif state == 0.0 and p > m * (1.0 + band):
+                state = 1.0
+            out[i, j] = state
+    return pd.DataFrame(out, index=prices_m.index, columns=prices_m.columns)
+
+
+def apply_trend(W_rp, signal):
+    """Risk-parity weights without trend filter (rows = decision dates) times a trend signal in [0, 1].
+
+    The weight of every asset that is switched off goes to CASH. With the plain trend_signal() this reproduces
+    target_weights(..., use_trend=True), because the risk-parity weights do not depend on the signal.
+    """
+    assets = [c for c in W_rp.columns if c != "CASH"]
+    on = signal.reindex(index=W_rp.index, columns=assets)
+    if on.isna().to_numpy().any():
+        raise ValueError("trend signal not available on every decision date")
+    W = W_rp[assets] * on
+    W["CASH"] = 1.0 - W.sum(axis=1)
+    W.index.name = W_rp.index.name
+    return W
+
+
+def backtest_band(weights, data, cost_bps=10.0, band=0.0):
+    """backtest() with a no-trade band on the weights.
+
+    At a rebalancing date an asset is traded back to its target weight only if its drifted weight is at least
+    `band` away from the target. Otherwise the drifted weight is kept and the difference stays in or comes from
+    CASH. Entries and exits (target or drifted weight zero) are always executed, so the trend filter is never
+    delayed. If the kept weights would leave less than zero in CASH, the traded assets are scaled down so that
+    the weights sum to one without borrowing. band = 0 reproduces backtest() exactly.
+    Returns the same table as backtest(); the executed weights are in .attrs["executed"].
+    """
+    cols = list(weights.columns)
+    assets = [c for c in cols if c != "CASH"]
+    R = data.rets_m.reindex(columns=assets).copy()
+    R["CASH"] = data.rf_m
+    R = R[cols]
+    months = data.rets_m.index
+    drifted = pd.Series(0.0, index=cols)
+    drifted["CASH"] = 1.0
+    rows, executed = [], []
+    for t, target in weights.iterrows():
+        pos = months.get_loc(t)
+        if pos + 1 >= len(months):
+            break
+        w = target.copy()
+        if band > 0:
+            keep = (
+                ((target[assets] - drifted[assets]).abs() < band)
+                & (target[assets] > 0)
+                & (drifted[assets] > 0)
+            )
+            w[assets] = np.where(keep, drifted[assets], target[assets])
+            cash = 1.0 - float(w[assets].sum())
+            if cash < 0.0:
+                traded = [a for a in assets if not keep[a]]
+                room = 1.0 - float(w[assets][keep].sum())
+                w[traded] = w[traded] * room / float(w[traded].sum())
+                cash = 1.0 - float(w[assets].sum())
+            w["CASH"] = cash
+        t_next = months[pos + 1]
+        r = R.loc[t_next]
+        if r[w > 0].isna().any():
+            raise ValueError(f"missing return in {t_next.date()} for a held asset")
+        r = r.fillna(0.0)
+        turnover = float((w[assets] - drifted[assets]).abs().sum()) if assets else 0.0
+        cost = cost_bps / 1e4 * turnover
+        gross = float((w * r).sum())
+        net = (1.0 - cost) * (1.0 + gross) - 1.0
+        rows.append(
+            {
+                "date": t_next,
+                "gross": gross,
+                "net": net,
+                "turnover": turnover,
+                "cost": cost,
+                "cash_weight": float(w["CASH"]),
+                "rf": float(r["CASH"]),
+            }
+        )
+        executed.append(w.rename(t))
+        drifted = w * (1.0 + r) / (1.0 + gross)
+    res = pd.DataFrame(rows).set_index("date")
+    res.attrs["executed"] = pd.DataFrame(executed)
+    return res
+
+
+def backtest_daily(weights, prices_d, rf_period, cost_bps=10.0, start=None, rf_start=0.0):
+    """Daily backtest of one rebalancing schedule (used for the tranches of Section 9.16).
+
+    weights   : target weights; rows = decision days (trading days in prices_d), columns = assets + CASH.
+    prices_d  : daily prices of the assets (short gaps forward-filled by the caller).
+    rf_period : cash return of the holding period that starts on each decision day (e.g. ^IRX / 1200).
+    start     : optional earlier day on which the portfolio starts in cash; until the first decision the cash
+                earns rf_start per 21 trading days.
+    Holdings drift with daily prices; cash compounds each period's rate evenly over the trading days of that
+    period (the last period, which has no next decision, uses 21 days). On a decision day the costs
+    cost_bps / 1e4 x turnover (|target - drifted|, assets only) are paid, then the targets are bought.
+    If the rate of the last decision is missing (no next period yet), its cash earns nothing.
+    Returns (nav, turnover): nav = daily portfolio value BEFORE the day's trade, starting at 1, so that
+    nav[t+1] / nav[t] between two decision days equals the net return of backtest(); turnover per decision day.
+    """
+    cols = list(weights.columns)
+    assets = [c for c in cols if c != "CASH"]
+    a_idx = np.array([cols.index(a) for a in assets], dtype=int)
+    c_idx = cols.index("CASH")
+    dec = pd.DatetimeIndex(weights.index)
+    start = dec[0] if start is None else pd.Timestamp(start)
+    px = prices_d[assets]
+    days = px.index[px.index >= start]
+    pos = pd.Series(np.arange(len(days)), index=days)
+    missing = dec.difference(days)
+    if len(missing):
+        raise ValueError(f"decision days not in the price index: {list(missing[:3])}")
+    dec_pos = pos.loc[dec].to_numpy()
+    growth = (px / px.shift(1)).loc[days].to_numpy(dtype=float)
+    W = weights[cols].to_numpy(dtype=float)
+    rfp = pd.Series(rf_period).reindex(dec).to_numpy(dtype=float, copy=True)
+    if np.isnan(rfp[:-1]).any():  # the last decision has no next period, so its rate may be missing
+        raise ValueError("rf_period missing on a decision day")
+    rfp[-1] = 0.0 if np.isnan(rfp[-1]) else rfp[-1]
+    hold = np.zeros(len(cols))
+    hold[c_idx] = 1.0
+    cash_g = (1.0 + rf_start) ** (1.0 / 21.0)
+    nav = np.empty(len(days))
+    turnover = np.empty(len(dec))
+    k = 0
+    for i in range(len(days)):
+        if i > 0:
+            g = growth[i]
+            held = hold[a_idx] != 0.0
+            if np.isnan(g[held]).any():
+                raise ValueError(f"missing price on {days[i].date()} for a held asset")
+            hold[a_idx] *= np.where(held, g, 1.0)
+            hold[c_idx] *= cash_g
+        nav[i] = hold.sum()
+        if k < len(dec) and i == dec_pos[k]:
+            value = nav[i]
+            drift = hold / value
+            to = float(np.abs(W[k, a_idx] - drift[a_idx]).sum())
+            turnover[k] = to
+            hold = W[k] * value * (1.0 - cost_bps / 1e4 * to)
+            steps = (dec_pos[k + 1] - i) if k + 1 < len(dec) else 21
+            cash_g = (1.0 + rfp[k]) ** (1.0 / steps)
+            k += 1
+    return pd.Series(nav, index=days, name="nav"), pd.Series(turnover, index=dec, name="turnover")
+
+
+def deflated_sharpe(r, rf, sr_trials, n_trials):
+    """Deflated Sharpe ratio (Bailey and Lopez de Prado, 2014).
+
+    Probability that the true Sharpe ratio of `r` is above zero after correcting for (a) the number of strategy
+    variants tried and (b) skewness and fat tails. sr_trials: per-period (monthly, not annualised) Sharpe ratios
+    of the variants tried; n_trials (>= 2): how many were tried. Returns (DSR, SR0 annualised, SR annualised),
+    where SR0 is the Sharpe ratio the best of n_trials unskilled variants would reach by luck.
+    """
+    ex = (r - rf.reindex(r.index)).dropna().to_numpy(dtype=float)
+    T = len(ex)
+    sr = ex.mean() / ex.std(ddof=1)
+    z = (ex - ex.mean()) / ex.std(ddof=0)
+    skew, kurt = float(np.mean(z**3)), float(np.mean(z**4))
+    emc = 0.5772156649015329  # Euler-Mascheroni constant
+    sd_trials = float(np.std(np.asarray(sr_trials, dtype=float), ddof=1))
+    sr0 = sd_trials * (
+        (1.0 - emc) * std_normal.ppf(1.0 - 1.0 / n_trials) + emc * std_normal.ppf(1.0 - 1.0 / (n_trials * np.e))
+    )
+    stat = (sr - sr0) * np.sqrt(T - 1) / np.sqrt(1.0 - skew * sr + (kurt - 1.0) / 4.0 * sr**2)
+    return float(std_normal.cdf(stat)), float(np.sqrt(12) * sr0), float(np.sqrt(12) * sr)

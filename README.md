@@ -8,8 +8,11 @@ A machine-learning extension (notebook Section 9) tests a walk-forward hidden Ma
 the trend filter and a simple volatility rule, with promotion gates fixed before the first run. Sections 9.6–9.13 add
 Hierarchical Risk Parity, walk-forward classifiers (logistic regression, gradient boosting) with HMM states, macro data
 and the FinBERT tone of FOMC statements as features, leverage to a volatility target, and robustness checks (block
-bootstrap, rebalancing day, subsamples). A full run takes about 2–3 minutes (about 1 minute with the local cache in `notebook/cache/`) and needs internet access to Yahoo Finance,
-federalreserve.gov and Hugging Face. Background: `docs/handover/`.
+bootstrap, rebalancing day, subsamples). Sections 9.14–9.21 test changes to the rule itself: hysteresis and no-trade
+bands, tranche rebalancing (daily engine), an out-of-sample test on 1992–2007 proxy data, TIP, leverage financing, a EUR
+investor view and the deflated Sharpe ratio. A full run takes about 2–3 minutes (with the local cache in `notebook/cache/`)
+and needs internet access to Yahoo Finance, FRED (euro interest rate), federalreserve.gov and Hugging Face. FinBERT uses
+the Apple-silicon GPU (MPS) or a CUDA GPU when available. Background: `docs/handover/`.
 
 | | |
 |---|---|

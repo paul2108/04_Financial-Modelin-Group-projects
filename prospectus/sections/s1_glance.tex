@@ -14,7 +14,9 @@ Key results & Volatility \res{strat_ann_vol} vs \res{b6040_ann_vol} (60/40) $\cd
 \res{b6040_ann_mean} p.a. $\cdot$ 2008: \res{strat_ret_2008} vs \res{b6040_ret_2008}.\\
 ML check & A walk-forward hidden Markov model, Hierarchical Risk Parity and supervised classifiers using HMM states
 and FinBERT tone of FOMC statements were tested against pre-registered gates; none beat the simple rule
-(classifier AUC \res{ext_auc_min}--\res{ext_auc_max}; Section~9).\\
+(classifier AUC \res{ext_auc_min}--\res{ext_auc_max}; Section~9). None of the \res{imp_n_trials} variants tried was adopted.\\
+Out of sample & On proxy data for \res{imp_oos_start}--\res{imp_oos_end}, which the project had not used before, the rule again
+lost far less than 60/40 at its worst (maximum drawdown \res{imp_oos_a_maxdd} vs \res{imp_oos_6040_maxdd}; Section~8).\\
 \end{tabularx}
 \end{tcolorbox}
 \vspace{-2pt}

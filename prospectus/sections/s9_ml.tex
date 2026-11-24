@@ -39,3 +39,11 @@ classifier variant has a drawdown of at least \res{ext_clf_mdd_best} and a Sharp
 not adopted. In total \res{ext_n_promoted} of \res{ext_n_variants} variants pass. For our client this is a useful
 negative result: better \emph{prediction} is not automatically a better \emph{portfolio}, so the prospectus strategy stays
 rule-based.
+
+\textbf{Improvement tests.} Finally we tested whether the rule itself can be made more robust, again with settings and
+gates fixed before the first run. The band around the trend signal (J) cuts turnover but
+trades later and costs Sharpe ratio; skipping small weight changes (K) hardly lowers turnover; four rebalancing tranches
+(M) remove the dependence on one day but stay below the favourable month-end result; TIP (N) changes little. On proxy
+data for \res{imp_oos_start}--\res{imp_oos_end} the averaged 6--12-month trend signal H (Sharpe \res{imp_oos_h_sharpe})
+did not beat the base rule (\res{imp_oos_a_sharpe}) and is rejected. \res{imp_n_promoted} of \res{imp_n_variants} variants
+pass, so the prospectus strategy stays unchanged.

@@ -53,7 +53,7 @@ ASSET_NAMES = {
 }
 
 REPO_URL = "https://github.com/paul2108/04_Financial-Modelin-Group-projects"
-APP_URL = "https://groupz-risk-parity-trend.streamlit.app"
+APP_URL = "https://04financial-modelin-group-projects-u7jx8pavhcsfkqmkps5b5d.streamlit.app"
 NOTEBOOK_VIEW_URL = ("https://nbviewer.org/github/paul2108/04_Financial-Modelin-Group-projects/"
                      "blob/main/notebook/GroupZ_RiskParity_Trend.ipynb")
 

@@ -1,5 +1,5 @@
 Group Z extended tests (Sections 9.6-9.21) - results
-Data retrieved: 2026-11-23 22:49 UTC
+Data retrieved: 2026-11-24 07:50 UTC
 Sample: Mar 2007-Oct 2026, costs 10 bps
 
 === Test configuration ===
@@ -75,7 +75,7 @@ A levered to 7% vol               12.2          0.3                      -6.5   
 A levered to 10% vol              16.2          0.3                      -9.4      46.5
 
 === 9.10 FinBERT model revision (Hugging Face commit, for reproducibility) ===
-ProsusAI/finbert @ not loaded (all statements taken from the cache) (device: mps)
+ProsusAI/finbert @ not loaded (all statements taken from the cache) (device: -1)
 
 === 9.10 FinBERT tone of FOMC statements by year (178 statements; tone = share positive - share negative) ===
          count  mean   min  max
@@ -105,24 +105,24 @@ release
 === 9.11 Out-of-sample prediction quality (1,212 asset-months, base rate 43.9%) ===
                         AUC  Brier  share flagged
 with HMM|logit        0.517  0.253          0.345
-with HMM|boost        0.503  0.281          0.420
+with HMM|boost        0.502  0.281          0.419
 without HMM|logit     0.513  0.250          0.243
-without HMM|boost     0.501  0.280          0.433
+without HMM|boost     0.501  0.280          0.437
 with HMM + FOMC|logit 0.518  0.255          0.362
-with HMM + FOMC|boost 0.497  0.283          0.452
+with HMM + FOMC|boost 0.498  0.283          0.451
 base rate             0.500  0.247          0.000
 
 === 9.11 Drop in out-of-sample AUC when a feature group is shuffled (higher = more important) ===
                      logit | with HMM  boost | with HMM  logit | with HMM + FOMC  boost | with HMM + FOMC
-HMM probabilities              0.0082            0.0227                   0.0029                   0.0031
-distance from trend           -0.0023            0.0068                  -0.0033                   0.0042
-momentum                      -0.0007            0.0044                  -0.0006                  -0.0103
+HMM probabilities              0.0082            0.0228                   0.0029                   0.0041
+distance from trend           -0.0023            0.0067                  -0.0033                   0.0043
+momentum                      -0.0007            0.0032                  -0.0006                  -0.0102
 asset volatility              -0.0119            0.0069                  -0.0136                  -0.0014
-yield-curve slope             -0.0004           -0.0010                  -0.0003                  -0.0022
-VIX                            0.0211            0.0044                   0.0155                   0.0027
-credit stress                 -0.0048            0.0155                  -0.0098                   0.0057
-asset dummies                  0.0178            0.0088                   0.0220                   0.0042
-FOMC tone (FinBERT)               NaN               NaN                  -0.0024                  -0.0073
+yield-curve slope             -0.0004           -0.0011                  -0.0003                  -0.0020
+VIX                            0.0211            0.0040                   0.0155                   0.0027
+credit stress                 -0.0048            0.0150                  -0.0098                   0.0057
+asset dummies                  0.0178            0.0091                   0.0220                   0.0041
+FOMC tone (FinBERT)               NaN               NaN                  -0.0024                  -0.0075
 
 === 9.11 Classifier variants, Jan 2010-Oct 2026 (same months for all), net ===
                                     CAGR %  Vol %  Sharpe  Max DD %  Worst 12m %  Final $1  Turnover % p.a.
@@ -132,10 +132,10 @@ F: clf replaces trend (logit)         3.83   5.59    0.44    -14.79       -11.36
 G: clf filters trend exits (logit)    4.83   6.13    0.57    -14.51       -11.82      2.21           202.71
 G without HMM (logit)                 5.02   6.19    0.59    -16.02       -13.39      2.28           131.92
 G with HMM + FOMC tone (logit)        4.62   6.20    0.53    -15.66       -13.50      2.14           223.91
-F: clf replaces trend (boost)         3.56   5.25    0.42    -16.17       -15.08      1.80           485.53
-G: clf filters trend exits (boost)    4.61   6.24    0.52    -15.92       -13.70      2.13           226.62
-G without HMM (boost)                 4.94   6.12    0.58    -15.42       -13.18      2.25           213.89
-G with HMM + FOMC tone (boost)        4.55   6.12    0.52    -15.54       -13.75      2.12           248.51
+F: clf replaces trend (boost)         3.52   5.27    0.41    -15.96       -15.08      1.79           478.35
+G: clf filters trend exits (boost)    4.62   6.24    0.52    -15.92       -13.70      2.14           227.81
+G without HMM (boost)                 4.94   6.11    0.58    -15.42       -13.18      2.25           207.08
+G with HMM + FOMC tone (boost)        4.53   6.12    0.52    -15.54       -13.75      2.11           248.56
 
 === 9.11 Promotion gates of the classifier variants (reference: A on the same months) ===
                                    Sharpe Sharpe A Sharpe >= A  MDD % MDD A % MDD not deeper stress wins PROMOTED
@@ -143,7 +143,7 @@ F: clf replaces trend (logit)        0.44     0.65       False -14.79   -5.65   
 G: clf filters trend exits (logit)   0.57     0.65       False -14.51   -5.65          False      0 of 2    False
 G without HMM (logit)                0.59     0.65       False -16.02   -5.65          False      0 of 2    False
 G with HMM + FOMC tone (logit)       0.53     0.65       False -15.66   -5.65          False      0 of 2    False
-F: clf replaces trend (boost)        0.42     0.65       False -16.17   -5.65          False      0 of 2    False
+F: clf replaces trend (boost)        0.41     0.65       False -15.96   -5.65          False      0 of 2    False
 G: clf filters trend exits (boost)   0.52     0.65       False -15.92   -5.65          False      0 of 2    False
 G without HMM (boost)                0.58     0.65       False -15.42   -5.65          False      0 of 2    False
 G with HMM + FOMC tone (boost)       0.52     0.65       False -15.54   -5.65          False      0 of 2    False
@@ -153,7 +153,7 @@ G with HMM + FOMC tone (boost)       0.52     0.65       False -15.54   -5.65   
 G: clf filters trend exits (logit)          391               238
 G without HMM (logit)                       391               278
 G with HMM + FOMC tone (logit)              391               234
-G: clf filters trend exits (boost)          391               248
+G: clf filters trend exits (boost)          391               247
 G without HMM (boost)                       391               238
 G with HMM + FOMC tone (boost)              391               229
 
@@ -203,7 +203,7 @@ F: clf replaces trend (logit)                   classifier    False   0.44 -14.7
 G: clf filters trend exits (logit)              classifier    False   0.57 -14.51    from 2010
 G without HMM (logit)                           classifier    False   0.59 -16.02    from 2010
 G with HMM + FOMC tone (logit)                  classifier    False   0.53 -15.66    from 2010
-F: clf replaces trend (boost)                   classifier    False   0.42 -16.17    from 2010
+F: clf replaces trend (boost)                   classifier    False   0.41 -15.96    from 2010
 G: clf filters trend exits (boost)              classifier    False   0.52 -15.92    from 2010
 G without HMM (boost)                           classifier    False   0.58 -15.42    from 2010
 G with HMM + FOMC tone (boost)                  classifier    False   0.52 -15.54    from 2010
@@ -351,5 +351,5 @@ N: + TIP (7 assets)             universe    False   0.66     0.66 -5.34   -5.65 
 variants tried                                                  24.000
 variants with full-sample returns (for the spread)              22.000
 Sharpe ratio of A (annualised)                                   0.658
-expected best Sharpe ratio of unskilled variants (annualised)    0.132
-deflated Sharpe ratio = P(true Sharpe > 0)                       0.990
+expected best Sharpe ratio of unskilled variants (annualised)    0.133
+deflated Sharpe ratio = P(true Sharpe > 0)                       0.989

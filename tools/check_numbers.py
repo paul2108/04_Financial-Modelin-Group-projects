@@ -4,7 +4,7 @@ Checks:
   1. every \\res{key} / \\resmark{key} used in the .tex files is defined in results_macros.tex
   2. the prose contains no hand-typed result numbers (percentages or decimals outside \\res{})
   3. every register row has a notebook section, a link, a source and a retrieval date
-  4. (if main.aux exists) every cited key has at least one page recorded, i.e. it appears in the appendix
+  4. (if main.aux exists) every cited key has at least one page recorded, i.e. the PDF was rebuilt after the last change
 Read-only: the script never changes files, so --dry-run only prints what would be checked.
 
 Usage: python tools/check_numbers.py [--dry-run]

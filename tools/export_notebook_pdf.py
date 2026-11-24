@@ -97,7 +97,7 @@ def main() -> int:
 
     nb = nbformat.read(NOTEBOOK, as_version=4)
     n_code = sum(c.cell_type == "code" for c in nb.cells)
-    n_run = sum(c.cell_type == "code" and c.get("execution_count") for c in nb.cells)
+    n_run = sum(bool(c.cell_type == "code" and c.get("execution_count")) for c in nb.cells)
     if n_run < n_code - 1:          # the Colab install cell may have no execution count
         print(f"Notebook has only {n_run} of {n_code} code cells executed - run `make notebook` first.")
         return 1

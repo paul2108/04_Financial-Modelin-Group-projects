@@ -45,7 +45,9 @@ should not buy it; the measure that matters for our client is the drawdown.
 loss was about a sixth of the 60/40 loss. The worst 12-month return was \res{strat_worst_12m} vs \res{b6040_worst_12m}.
 \item \emph{At equal risk:} levered each month to a volatility target close to that of 60/40 (realised \res{ext_lev10_ann_vol};
 borrowing at a small spread over the T-bill rate, before taxes), the strategy would have earned \res{ext_lev10_cagr} a year against
-\res{b6040_cagr}, with a maximum drawdown of \res{ext_lev10_max_dd} against \res{b6040_max_dd}.
+\res{b6040_cagr}, with a maximum drawdown of \res{ext_lev10_max_dd} against \res{b6040_max_dd}. With leverage capped at two times, which is more
+realistic for private clients, and borrowing at 10 bps over T-bills, it would have earned \res{imp_lev_cap2_s10_cagr} a year
+(Sharpe ratio \res{imp_lev_cap2_s10_sharpe}, maximum drawdown \res{imp_lev_cap2_s10_maxdd}).
 \end{itemize}
 
 \begin{figure}[!htb]

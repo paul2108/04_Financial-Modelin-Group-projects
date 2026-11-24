@@ -16,7 +16,7 @@ the Apple-silicon GPU (MPS) or a CUDA GPU when available. Background: `docs/hand
 
 | | |
 |---|---|
-| Interactive app | https://groupz-risk-parity-trend.streamlit.app |
+| Interactive app | https://04financial-modelin-group-projects-u7jx8pavhcsfkqmkps5b5d.streamlit.app |
 | Notebook in Colab | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/paul2108/04_Financial-Modelin-Group-projects/blob/main/notebook/GroupZ_RiskParity_Trend.ipynb) |
 | Prospectus (PDF) | [`prospectus/GroupZ_Prospectus.pdf`](prospectus/GroupZ_Prospectus.pdf) |
 | Executed notebook as PDF (read without running) | [`notebook/GroupZ_RiskParity_Trend.pdf`](notebook/GroupZ_RiskParity_Trend.pdf) |
@@ -63,7 +63,7 @@ in `.vscode/settings.json` uses tectonic. A latexmk recipe for MacTeX/TeX Live i
 
 1. Go to <https://share.streamlit.io>, sign in with GitHub and choose *Create app*, then *Deploy a public app from GitHub*.
 2. Repository `paul2108/04_Financial-Modelin-Group-projects`, branch `main`, main file `app/streamlit_app.py`.
-3. *Advanced settings*: Python 3.12. App URL: `groupz-risk-parity-trend`.
+3. *Advanced settings*: Python 3.12. App URL: `04financial-modelin-group-projects-u7jx8pavhcsfkqmkps5b5d` (assigned by Streamlit).
 4. Dependencies come from `requirements.txt` in the repository root.
 
 ## Consistency between notebook, app and prospectus

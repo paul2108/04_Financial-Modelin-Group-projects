@@ -1,7 +1,7 @@
 % Investor prospectus "Risk Parity + Trend" -- Group Z, Financial Modeling (Nova SBE)
 % Build: tectonic -X compile main.tex   (or VS Code + LaTeX Workshop, recipe "tectonic")
 % Every result is printed with \res{key}; the values come from results_macros.tex, which the
-% notebook (Section 9) writes. Do not type results by hand.
+% notebook (Section 10) writes. Do not type results by hand. Each value links to its notebook section.
 \documentclass[10pt,a4paper]{article}
 
 \usepackage{iftex}
@@ -44,7 +44,13 @@
 \makeatother
 
 \input{results_macros.tex}
-\newcommand{\appurl}{https://groupz-risk-parity-trend.streamlit.app}
+% No appendix (7-page limit): every value links straight to the notebook section that computes it
+\makeatletter
+\renewcommand{\res}[1]{\leavevmode\res@check{#1}\res@record{#1}\href{\csuse{res@url@#1}}{\csuse{res@val@#1}}}
+\renewcommand{\resval}[3]{\leavevmode\res@check{#1}\res@check{#2}\href{\csuse{res@url@#1}}{#3}}
+\robustify{\res}\robustify{\resval}
+\makeatother
+\newcommand{\appurl}{https://04financial-modelin-group-projects-u7jx8pavhcsfkqmkps5b5d.streamlit.app}
 \newcommand{\repourl}{https://github.com/paul2108/04_Financial-Modelin-Group-projects}
 
 \begin{document}
@@ -69,7 +75,7 @@
  & Tim Jonas Trompa (64287)\\
  & Paul Kuehl (64253)\\
  & Felix Schoenstein (80555)\\[4pt]
-\textbf{Date} & 20 November 2026\\[4pt]
+\textbf{Date} & 24 November 2026\\[4pt]
 \textbf{Interactive app} & \url{\appurl}\\
 \textbf{Code \& notebook} & \url{\repourl}\\
 \end{tabular}
@@ -117,14 +123,5 @@ results. This document was prepared for a university course and is not investmen
 \renewcommand{\refname}{References}
 \bibliography{references}
 }
-
-\section*{Appendix: sources of figures}
-{\scriptsize
-Every number, table and figure in this prospectus is computed in the notebook GroupZ\_RiskParity\_Trend.ipynb.
-Click a value in the text to jump to its row here, and click a page number to jump back; the notebook link opens
-the section that computes the value. YF = Yahoo Finance via the \texttt{yfinance} API (daily adjusted close);
-6 ETFs = SPY, EFA, IEF, VNQ, DBC, GLD. All market data were downloaded on \res{data_retrieved}.\par
-\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.0}
-\sourcestable}
 
 \end{document}

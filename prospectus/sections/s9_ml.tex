@@ -27,11 +27,11 @@ Section~6.
 
 \textbf{Extended tests.} We then tested \res{ext_n_variants} further variants with the same gates (extended tests in the notebook). Hierarchical Risk Parity \citep{lopezdeprado2016}, which clusters the assets by correlation, lowers the
 Sharpe ratio to \res{ext_e_sharpe}; Ledoit-Wolf shrinkage of the covariance matrix \citep{ledoit2004} changes almost
-nothing (\res{ext_i_sharpe}). Supervised classifiers (logistic regression and gradient boosting, \citealp{hastie2009,friedman2001}; re-fitted every December)
+nothing (\res{ext_i_sharpe}). Supervised classifiers (logistic regression and gradient boosting, \citealp{friedman2001}; re-fitted every December)
 predict for each asset whether it will trail T-bills next month. Their inputs are trend, momentum, volatility,
 yield-curve slope, VIX, credit spreads, the filtered probabilities of a three-state HMM and the tone of all
 \res{ext_fomc_n} FOMC statements since 2006 \citep[a text source shown to move markets;][]{hansen2016}, scored sentence by sentence with the transformer language model FinBERT
-\citep{araci2019}, a finance version of BERT \citep{devlin2019}. Their out-of-sample AUC \citep{hanley1982} is only \res{ext_auc_min}--\res{ext_auc_max} (a coin toss would score one half), so they
+\citep{araci2019}. Their out-of-sample AUC is only \res{ext_auc_min}--\res{ext_auc_max} (a coin toss would score one half), so they
 cannot tell which asset will fall, in line with the weak out-of-sample predictability of returns found by \citet{welch2008}. Used to filter the trend signal, they keep assets the filter sells: since 2010 every
 classifier variant has a drawdown of at least \res{ext_clf_mdd_best} and a Sharpe ratio of at most
 \res{ext_clf_sharpe_max} (base strategy \res{ext_clf_a_sharpe}). The closest candidate averages the trend signals of
@@ -43,7 +43,7 @@ rule-based.
 \textbf{Improvement tests.} Finally we tested whether the rule itself can be made more robust, again with settings and
 gates fixed before the first run. The band around the trend signal (J) and skipping small trades follow the idea that costly trades should be made only partially \citep{garleanu2013}; the band (J) cuts turnover but
 trades later and costs Sharpe ratio; skipping small weight changes (K) hardly lowers turnover; four rebalancing tranches
-(M) remove the dependence on one day \citep[rebalance timing luck;][]{hoffstein2019} but stay below the favourable month-end result; TIP (N) changes little. On proxy
+(M) remove the dependence on one day but stay below the favourable month-end result; TIP (N) changes little. On proxy
 data for \res{imp_oos_start}--\res{imp_oos_end} the averaged 6--12-month trend signal H (Sharpe \res{imp_oos_h_sharpe})
 did not beat the base rule (\res{imp_oos_a_sharpe}) and is rejected. \res{imp_n_promoted} of \res{imp_n_variants} variants
 pass, so the prospectus strategy stays unchanged.

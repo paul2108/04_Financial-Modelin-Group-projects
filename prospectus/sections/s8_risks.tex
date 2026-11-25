@@ -26,7 +26,7 @@ same. The Sharpe ratio is similar in both halves of the sample (\res{ext_sub1_sh
 and drawdowns of up to \res{ext_offset_mdd_worst}, still far smaller than those of 60/40. Four tranches with these rebalancing
 days give \res{imp_m_sharpe}, close to their average; this is the more realistic expectation than the month-end result.
 \item \textbf{Out-of-sample test.} As a final check we ran the rule on \res{imp_oos_start}--\res{imp_oos_end}, before the ETFs
-existed, with long-history index funds as proxies; trend following has also worked over much longer histories \citep{hurst2017}. No free gold series exists for that period, so five of the six asset
+existed, with long-history index funds as proxies. No free gold series exists for that period, so five of the six asset
 classes are covered. The project had never used these data. The rule had a Sharpe ratio of \res{imp_oos_a_sharpe} and a
 maximum drawdown of \res{imp_oos_a_maxdd}, against \res{imp_oos_6040_sharpe} and \res{imp_oos_6040_maxdd} for 60/40. Counting all
 \res{imp_n_trials} variants tried in the notebook, the deflated Sharpe ratio \citep{bailey2014} still puts the probability that

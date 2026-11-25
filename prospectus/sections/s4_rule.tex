@@ -1,21 +1,19 @@
 \textbf{Step 1 --- risk parity.} At each month-end $t$ we estimate the covariance matrix $\Sigma_t$ of the six ETFs from
-the last 252 daily returns. We then choose the weights $w$ so that every asset class contributes the same share of
-portfolio risk \citep{maillard2010}:
+the last 252 daily returns and choose weights $w$ so that every asset class contributes the same share of portfolio risk
+\citep{maillard2010}:
 \[
 RC_i=\frac{w_i(\Sigma_t w)_i}{w^\top\Sigma_t w}=\frac{1}{6}\ \ \text{for all } i,\qquad w_i>0,\quad \textstyle\sum_i w_i=1 .
 \]
-There is no closed-form solution, so the six nonlinear equations are solved numerically with SciPy's \texttt{fsolve},
-following \citet{spinu2013}. Every solution is verified: in all months the risk contributions are equal to within $10^{-8}$,
-and the fallback to inverse-volatility weights was never needed. Risk parity gives volatile assets (equities, commodities)
-small weights and stable assets (Treasuries) large ones, so that no single asset class dominates the risk, as equities
-do in a 60/40 portfolio \citep{asness2012}.
+There is no closed form, so the six equations are solved with SciPy's \texttt{fsolve}, following \citet{spinu2013}. In all
+months the risk contributions are equal to within $10^{-8}$; the inverse-volatility fallback was never needed. Volatile
+assets (equities, commodities) get small weights and stable ones (Treasuries) large weights, so no asset class dominates the
+risk, as equities do in 60/40 \citep{asness2012}.
 
 \textbf{Step 2 --- trend filter.} An asset class is held only if its month-end price is above its 10-month moving average
-\citep{faber2007}. Otherwise its risk-parity weight is invested in T-bills. Prices tend to trend over months
-\citep{moskowitz2012}, so the filter exits asset classes during prolonged declines such as 2008 or the 2022 bond sell-off.
+\citep{faber2007}; otherwise its weight goes to T-bills. Prices tend to trend over months \citep{moskowitz2012}, so the
+filter exits asset classes in prolonged declines such as 2008 or the 2022 bond sell-off.
 
-\textbf{Timing and rebalancing.} The weights are decided with closing prices of the last trading day of month $t$ and earn
-the returns of month $t+1$. No information from month $t+1$ is used. The portfolio is rebalanced to its targets once a month;
-between rebalancing dates holdings drift with prices. \textbf{Motivation from past performance:} in our sample, risk
-parity without the filter already reduced the drawdown of an equal-weighted portfolio from \res{ewnt_max_dd} to
-\res{ercnt_max_dd}; the trend filter cut it further to \res{strat_max_dd} (Table~\ref{tab:performance}).
+\textbf{Timing and rebalancing.} Weights are set with closing prices on the last trading day of month $t$ and earn the
+returns of month $t+1$; no later information is used. Between monthly rebalancing dates holdings drift with prices.
+\textbf{Motivation:} in our sample risk parity alone cut the drawdown of an equal-weighted portfolio from \res{ewnt_max_dd}
+to \res{ercnt_max_dd}; the trend filter cut it further to \res{strat_max_dd} (Table~\ref{tab:performance}).

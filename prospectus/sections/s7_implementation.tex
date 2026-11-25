@@ -1,24 +1,20 @@
-\textbf{Rebalancing.} Orders are placed once a month at the closing auction of the last trading day, using the weights computed
-from that day's closing prices. All seven instruments (six ETFs and a T-bill ETF) trade billions of dollars a day, so a
-portfolio of any realistic private-client size can be traded without moving prices. A model portfolio can be applied to
-many client accounts at once. Splitting the portfolio into four tranches with different rebalancing days removes the dependence on one day
+\textbf{Rebalancing.} Orders go to the closing auction of the last trading day of each month, using weights from that day's
+closes. All seven instruments (six ETFs and a T-bill ETF) trade billions of dollars a day, so any realistic private-client
+portfolio trades without moving prices, and one model portfolio can serve many accounts. Splitting the portfolio into four tranches with different rebalancing days removes the dependence on one day
 (Section~8) at the same turnover (\res{imp_m_turnover} p.a.).
 
-\textbf{Turnover and costs.} The strategy trades \res{strat_turnover} of its value per year, against \res{b6040_turnover}
-for 60/40: risk-parity weights change with volatility, and trend signals switch whole positions in and out. At our assumed
-\res{cost_bps} per unit traded this costs \res{cost_drag} p.a.; the gross Sharpe ratio of \res{strat_gross_sharpe} falls to
-\res{strat_sharpe} net. Solving $SR_{\text{strategy}}(c)=SR_{60/40}(c)$ with \texttt{fsolve} gives a \emph{break-even cost} of
-\res{breakeven_bps}: above it, the 60/40 portfolio offers the better risk-adjusted return. Bid-ask spreads of these ETFs are
-typically one basis point or less and commissions are often zero, so a cost-efficient platform is essential. At 50 bps the
-Sharpe ratio would drop to \res{sharpe_cost50}. Two ways to cut turnover (a band around the trend signal and skipping small trades, Section~9) failed our gates, because
+\textbf{Turnover and costs.} The strategy trades \res{strat_turnover} of its value per year (60/40: \res{b6040_turnover}),
+because risk-parity weights move with volatility and trend signals switch whole positions. At \res{cost_bps} per unit traded
+this costs \res{cost_drag} p.a.; the gross Sharpe ratio of \res{strat_gross_sharpe} falls to \res{strat_sharpe} net. Solving
+$SR_{\text{strategy}}(c)=SR_{60/40}(c)$ with \texttt{fsolve} gives a \emph{break-even cost} of \res{breakeven_bps}; above it
+60/40 has the better risk-adjusted return. Bid-ask spreads of these ETFs are typically one basis point or less and commissions
+often zero, but a cost-efficient platform is essential: at 50 bps the Sharpe ratio would drop to \res{sharpe_cost50}. Two ways to cut turnover (a band around the trend signal and skipping small trades, Section~9) failed our gates, because
 most trading comes from trend switches; the rule stays unchanged. T-bill
 positions can still be switched within a money-market sweep.
 
-\textbf{Euro-based clients.} US-listed ETFs are not available to EU retail investors, so the UCITS equivalents in
-Table~\ref{tab:holdings} are used. The backtest is in US dollars; a euro investor bears the EUR/USD exchange rate on the
-whole portfolio. Because the strategy's own volatility is low, currency risk dominates. Measured in euros
-(\res{imp_eur_start}--\res{imp_eur_end}), the unhedged strategy had a Sharpe ratio of \res{imp_eur_unh_sharpe} and a maximum
-drawdown of \res{imp_eur_unh_maxdd}. With the bond and cash sleeves in EUR-hedged share classes these improve to
-\res{imp_eur_hed_sharpe} and \res{imp_eur_hed_maxdd}, which is also better than hedging the whole portfolio (Sharpe ratio
-\res{imp_eur_full_sharpe}). We therefore recommend hedging the bond and cash sleeves. US investors should note that DBC issues a Schedule K-1 tax form; the
-no-K-1 version (PDBC) tracks a similar index.
+\textbf{Euro-based clients.} EU retail investors use the UCITS equivalents in Table~\ref{tab:holdings} and bear the
+EUR/USD rate on the whole portfolio, which dominates the strategy's low own volatility. In euros
+(\res{imp_eur_start}--\res{imp_eur_end}) the unhedged strategy had a Sharpe ratio of \res{imp_eur_unh_sharpe} and a maximum
+drawdown of \res{imp_eur_unh_maxdd}; EUR-hedged bond and cash sleeves improve these to \res{imp_eur_hed_sharpe} and
+\res{imp_eur_hed_maxdd}, better than hedging everything (Sharpe ratio \res{imp_eur_full_sharpe}), so we recommend them. US
+investors should note that DBC issues a Schedule K-1 tax form; the no-K-1 version (PDBC) tracks a similar index.

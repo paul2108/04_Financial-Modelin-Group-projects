@@ -1,16 +1,13 @@
-\textbf{Source and sample.} Daily prices from Yahoo Finance, retrieved through the \texttt{yfinance} API for the six ETFs,
-AGG, the S\&P 500 total return index (\texttt{\textasciicircum SP500TR}) and the 13-week T-bill yield (\texttt{\textasciicircum IRX}).
-Data start on \res{data_start} and end on \res{data_end}. The youngest ETF (DBC, launched in February 2006) and the 252-day
-risk window set the first decision date to \res{first_decision}, so the backtest covers \res{sample_months} monthly returns
-from \res{sample_start} to \res{sample_end}, including the global financial crisis, the Covid crash and the 2022 rate shock.
+\textbf{Source and sample.} Daily prices from Yahoo Finance (\texttt{yfinance}) for the six ETFs, AGG, the S\&P 500 total
+return index (\texttt{\textasciicircum SP500TR}) and the 13-week T-bill yield (\texttt{\textasciicircum IRX}), from
+\res{data_start} to \res{data_end}. The youngest ETF (DBC, February 2006) and the 252-day risk window set the first decision
+date to \res{first_decision}, giving \res{sample_months} monthly returns from \res{sample_start} to \res{sample_end}, including
+the financial crisis, the Covid crash and the 2022 rate shock.
 
-\textbf{Adjustments and calculations.} Prices are adjusted for splits and distributions, so returns are total returns
-after fund fees. Month-end values are the last close of each month; returns are simple returns, so that portfolio returns
-are exact weighted sums. The cash return in month $t$ is the \texttt{\textasciicircum IRX} yield at the end of month $t-1$
-divided by 12 (on average \res{rf_mean} p.a.). Averages are annualised by $\times 12$ and volatilities by $\times\sqrt{12}$.
-The Sharpe ratio uses excess returns over T-bills. Beta and Jensen's alpha come from a regression of excess returns on the
-market's (S\&P 500 total return) excess returns; beta is \emph{not} annualised, alpha is $\times 12$, and its $t$-statistic
-uses Newey-West standard errors \citep{newey1987}. The information ratio is the annualised mean return in excess of the
-60/40 benchmark divided by the tracking error. Trading costs of \res{cost_bps} are charged on every unit of turnover
-(the sum of absolute weight changes against drifted weights) for the strategy and the benchmark alike. Every number in
-this prospectus is computed in the notebook; clicking a value opens the notebook section that computes it.
+\textbf{Adjustments and calculations.} Prices are adjusted for splits and distributions, so returns are total returns after
+fund fees. Month-end values are the last close; returns are simple, so portfolio returns are exact weighted sums. The cash
+return in month $t$ is the \texttt{\textasciicircum IRX} yield at the end of $t-1$ divided by 12 (average \res{rf_mean} p.a.).
+Beta and Jensen's alpha come from regressing excess returns on S\&P 500 total-return excess returns, with Newey-West
+$t$-statistics \citep{newey1987}; the other measures are defined below Table~\ref{tab:performance}. Costs of \res{cost_bps}
+apply to every unit of turnover (sum of absolute changes against drifted weights) for strategy and benchmark alike. Every
+number is computed in the notebook; clicking a value opens the section that computes it.

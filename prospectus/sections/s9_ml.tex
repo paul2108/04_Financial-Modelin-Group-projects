@@ -1,12 +1,13 @@
-\textbf{Question and model.} Machine learning has improved return forecasts for stocks \citep{gu2020}; we tested whether
-it also detects stressed markets better than the trend filter. A two-state Gaussian hidden Markov model (HMM;
-\citealp{hamilton1989,rabiner1989}), a regime model established in asset allocation \citep{ang2002,nystrup2018}, learns a calm
-and a turbulent regime from daily S\&P 500 returns and volatility since \res{hmm_data_start}. To avoid look-ahead it is
-re-estimated every December on past data only, and each month uses the \emph{filtered} probability of the turbulent state.
-Smoothed or Viterbi state paths, which use future data and flatter many published HMM backtests, are never used. In risk-off
-months the growth assets (SPY, EFA, VNQ, DBC) are halved. A simple volatility rule is the non-ML baseline. Before the first
-run we fixed all thresholds and three promotion gates: a Sharpe ratio at least that of the base strategy, a drawdown no
-deeper, and a better return in at least two of three stress periods.
+\textbf{Question and model.} Machine learning has improved return forecasts in large cross-sections of stocks
+\citep{gu2020}. We tested whether it also detects stressed markets better than the trend filter. A two-state Gaussian hidden Markov model (HMM; \citealp{hamilton1989,rabiner1989}) learns a calm and a
+turbulent regime from daily S\&P 500 returns and volatility since \res{hmm_data_start}; regime models of this kind are
+established in asset allocation \citep{ang2002,nystrup2018}. To avoid look-ahead, the model is re-estimated every
+December on past data only, and each month uses the \emph{filtered} probability of the turbulent state given data up
+to that day. Smoothed or Viterbi state paths, which use future data and make many published HMM backtests look better
+than they are, are never used for decisions. In risk-off months the growth assets (SPY, EFA, VNQ, DBC) are halved.
+A simple volatility rule serves as non-ML baseline. Before the first run we fixed all thresholds and three promotion
+gates: Sharpe ratio at least that of the base strategy, a drawdown no deeper, and a better return in at least two of
+the three stress periods.
 
 \begin{table}[!htb]
 \centering\small
@@ -15,33 +16,34 @@ deeper, and a better return in at least two of three stress periods.
 \end{table}
 
 \textbf{Result.} The HMM flags \res{ml_recall_hmm} of the \res{ml_n_stress} stress months (S\&P 500 down more than
-\res{ml_stress_threshold} in the next month), more than the trend signal (\res{ml_recall_trend}), but only \res{ml_precision_hmm}
-of its alarms are followed by such a fall, and it is risk-off in \res{ml_riskoff_hmm} of all months. Replacing the trend filter
-(C) lowers the Sharpe ratio to \res{ml_c_sharpe} and deepens the drawdown to \res{ml_c_max_dd}, because the trend filter also
-exits falling Treasuries. As an overlay (D) the HMM trims the drawdown to \res{ml_d_max_dd} but costs return through extra cash
-and turnover (Sharpe \res{ml_d_sharpe}). No variant passes the gates (C \res{ml_c_verdict}, D \res{ml_d_verdict}), for every
-random start and similarly with three states (\res{ml_3state_sharpe}). Differences of a few hundredths in the Sharpe ratio are
-far inside the statistical noise of Section~6.
+\res{ml_stress_threshold} in the next month), more than the trend signal (\res{ml_recall_trend}). But only \res{ml_precision_hmm} of its
+alarms are followed by such a fall, and it is risk-off in \res{ml_riskoff_hmm} of all months. Replacing the trend filter
+(C) lowers the Sharpe ratio to \res{ml_c_sharpe} and deepens the drawdown to \res{ml_c_max_dd}, because the trend filter
+also exits Treasuries when they fall. As an overlay (D) the HMM trims the drawdown to \res{ml_d_max_dd} but costs return
+through extra cash and turnover (Sharpe \res{ml_d_sharpe}). No variant passes the gates (C \res{ml_c_verdict},
+D \res{ml_d_verdict}); the result is the same for every random start and similar with three states
+(\res{ml_3state_sharpe}). Sharpe differences of a few hundredths are in any case far inside the statistical noise of
+Section~6.
 
-\textbf{Extended tests.} \res{ext_n_variants} further variants faced the same gates. Hierarchical Risk Parity
-\citep{lopezdeprado2016}, which clusters assets by correlation, lowers the Sharpe ratio to \res{ext_e_sharpe}; Ledoit-Wolf
-shrinkage of the covariance matrix \citep{ledoit2004} changes almost nothing (\res{ext_i_sharpe}). Classifiers (logistic
-regression and gradient boosting, \citealp{friedman2001}; re-fitted every December) predict for each asset whether it will
-trail T-bills next month, from trend, momentum, volatility, yield-curve slope, VIX, credit spreads, three-state HMM
-probabilities and the tone of all \res{ext_fomc_n} FOMC statements since 2006 \citep[a text source shown to move
-markets;][]{hansen2016}, scored sentence by sentence with the language model FinBERT \citep{araci2019}. Their out-of-sample
-AUC is only \res{ext_auc_min}--\res{ext_auc_max} (a coin toss scores one half), in line with the weak out-of-sample
-predictability of returns \citep{welch2008}. Used to filter the trend signal, they keep assets the filter sells: since 2010
-every classifier variant has a drawdown of at least \res{ext_clf_mdd_best} and a Sharpe ratio of at most
-\res{ext_clf_sharpe_max} (base strategy \res{ext_clf_a_sharpe}). The closest candidate averages the 6--12-month trend signals
-(Sharpe \res{ext_h_sharpe}, drawdown \res{ext_h_maxdd}); it \res{ext_h_verdict} the gates and is not adopted. In total
-\res{ext_n_promoted} of \res{ext_n_variants} variants pass. For our client this is a useful negative result: better
-\emph{prediction} is not automatically a better \emph{portfolio}, so the strategy stays rule-based.
+\textbf{Extended tests.} We then tested \res{ext_n_variants} further variants with the same gates (extended tests in the notebook). Hierarchical Risk Parity \citep{lopezdeprado2016}, which clusters the assets by correlation, lowers the
+Sharpe ratio to \res{ext_e_sharpe}; Ledoit-Wolf shrinkage of the covariance matrix \citep{ledoit2004} changes almost
+nothing (\res{ext_i_sharpe}). Supervised classifiers (logistic regression and gradient boosting, \citealp{friedman2001}; re-fitted every December)
+predict for each asset whether it will trail T-bills next month. Their inputs are trend, momentum, volatility,
+yield-curve slope, VIX, credit spreads, the filtered probabilities of a three-state HMM and the tone of all
+\res{ext_fomc_n} FOMC statements since 2006 \citep[a text source shown to move markets;][]{hansen2016}, scored sentence by sentence with the transformer language model FinBERT
+\citep{araci2019}. Their out-of-sample AUC is only \res{ext_auc_min}--\res{ext_auc_max} (a coin toss would score one half), so they
+cannot tell which asset will fall, in line with the weak out-of-sample predictability of returns found by \citet{welch2008}. Used to filter the trend signal, they keep assets the filter sells: since 2010 every
+classifier variant has a drawdown of at least \res{ext_clf_mdd_best} and a Sharpe ratio of at most
+\res{ext_clf_sharpe_max} (base strategy \res{ext_clf_a_sharpe}). The closest candidate averages the trend signals of
+6--12 months (Sharpe \res{ext_h_sharpe}, drawdown \res{ext_h_maxdd}); it \res{ext_h_verdict} the gates and is therefore
+not adopted. In total \res{ext_n_promoted} of \res{ext_n_variants} variants pass. For our client this is a useful
+negative result: better \emph{prediction} is not automatically a better \emph{portfolio}, so the prospectus strategy stays
+rule-based.
 
-\textbf{Improvement tests.} Finally we tested, with settings and gates again fixed in advance, whether the rule itself can be
-made more robust. A band around the trend signal (J) and skipping small weight changes (K) follow the idea that costly trades
-should be made only partially \citep{garleanu2013}: J cuts turnover but trades later and costs Sharpe ratio; K hardly lowers
-turnover. Four rebalancing tranches (M) remove the dependence on one day but stay below the favourable month-end result; TIP
-(N) changes little. On proxy data for \res{imp_oos_start}--\res{imp_oos_end} the averaged trend signal H (Sharpe
-\res{imp_oos_h_sharpe}) did not beat the base rule (\res{imp_oos_a_sharpe}) and is rejected. \res{imp_n_promoted} of
-\res{imp_n_variants} variants pass, so the strategy stays unchanged.
+\textbf{Improvement tests.} Finally we tested whether the rule itself can be made more robust, again with settings and
+gates fixed before the first run. The band around the trend signal (J) and skipping small trades follow the idea that costly trades should be made only partially \citep{garleanu2013}; the band (J) cuts turnover but
+trades later and costs Sharpe ratio; skipping small weight changes (K) hardly lowers turnover; four rebalancing tranches
+(M) remove the dependence on one day but stay below the favourable month-end result; TIP (N) changes little. On proxy
+data for \res{imp_oos_start}--\res{imp_oos_end} the averaged 6--12-month trend signal H (Sharpe \res{imp_oos_h_sharpe})
+did not beat the base rule (\res{imp_oos_a_sharpe}) and is rejected. \res{imp_n_promoted} of \res{imp_n_variants} variants
+pass, so the prospectus strategy stays unchanged.

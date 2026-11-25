@@ -5,9 +5,10 @@ strategy before trading costs.}\label{fig:cumulative}
 \includegraphics[width=\textwidth]{figures/fig_cumulative.pdf}\resmark{fig_cumulative}
 \end{figure}
 
-Figure~\ref{fig:cumulative} shows the central trade-off: \$1 grew to \$\res{strat_final_value} in the strategy,
-\$\res{b6040_final_value} in 60/40 and \$\res{mkt_final_value} in the S\&P 500. The strategy led until 2014 because it avoided
-the 2008 crash, then fell behind in the long bull market. Table~\ref{tab:performance} reports all measures.
+Figure~\ref{fig:cumulative} shows the central trade-off. \$1 grew to \$\res{strat_final_value} in the strategy, to
+\$\res{b6040_final_value} in the 60/40 portfolio and to \$\res{mkt_final_value} in the S\&P 500. The strategy was ahead
+until 2014 because it avoided the 2008 crash, and it fell behind in the long equity bull market that followed. Table~\ref{tab:performance}
+reports all measures.
 
 \begin{table}[!htb]
 \centering\small
@@ -26,26 +27,27 @@ alpha); information ratio = annualised active return / tracking error. Turnover 
 \textbf{What the measures mean for our client.}
 \begin{itemize}[leftmargin=1em]
 \item \emph{Average return} \res{strat_ann_mean} p.a. vs \res{b6040_ann_mean}: the client gives up about half of the 60/40
-return, but still grows well above the T-bill rate of \res{rf_mean}.
-\item \emph{Volatility} \res{strat_ann_vol} vs \res{b6040_ann_vol}: swings are about \res{vol_ratio_6040} times those of 60/40,
-the risk of a short-to-medium bond fund rather than a balanced fund.
-\item \emph{Sharpe ratio} \res{strat_sharpe} vs \res{b6040_sharpe}: the same reward per unit of risk; not a better portfolio, but a
-\emph{less risky} one. With a standard error of about \res{sharpe_se} \citep{lo2002} the two are statistically indistinguishable.
-\item \emph{Beta} \res{strat_beta_mkt} against the S\&P 500 (\res{strat_beta_bench} against 60/40): a 10\% equity fall implies a
-loss of only about \res{beta_mkt_loss10}\%. The return hardly depends on the stock market.
+return. Growth is still well above the T-bill rate of \res{rf_mean}, so the portfolio does grow, but slowly.
+\item \emph{Volatility} \res{strat_ann_vol} vs \res{b6040_ann_vol}: monthly swings are about \res{vol_ratio_6040} times those of
+60/40, the risk level of a short-to-medium bond fund rather than of a balanced fund.
+\item \emph{Sharpe ratio} \res{strat_sharpe} vs \res{b6040_sharpe}: the reward per unit of risk is the same. The strategy is not a
+better portfolio in this sense, it is a \emph{less risky} one. With a standard error of about \res{sharpe_se}
+\citep{lo2002}, the two Sharpe ratios are statistically indistinguishable.
+\item \emph{Beta} \res{strat_beta_mkt} against the S\&P 500 (\res{strat_beta_bench} against 60/40): if equities fall by 10\%,
+the strategy is expected to lose only about \res{beta_mkt_loss10}\%. Its return hardly depends on the stock market.
 \item \emph{Alpha} \res{strat_alpha_mkt} p.a. against the market ($t=\res{strat_alpha_mkt_t}$) and \res{strat_alpha_bench} against
-60/40 ($t=\res{strat_alpha_bench_t}$): more than the CAPM predicts given the low market exposure. It is borderline significant
-and mainly reflects Treasuries, gold and commodities, which a stock-market factor misses.
-\item \emph{Information ratio} \res{strat_info_ratio} against 60/40, tracking error \res{strat_tracking_error}: the strategy
-underperformed 60/40 and deviated from it a lot. Clients who judge success against 60/40 should not buy it; for our client
-the drawdown matters.
-\item \emph{Maximum drawdown} \res{strat_max_dd} vs \res{b6040_max_dd} (S\&P 500: \res{mkt_max_dd}): about a sixth of the 60/40
-loss. Worst 12 months: \res{strat_worst_12m} vs \res{b6040_worst_12m}.
-\item \emph{At equal risk:} levered monthly to a volatility target near that of 60/40 (realised \res{ext_lev10_ann_vol}; borrowing
-slightly above the T-bill rate, before taxes), the strategy would have earned \res{ext_lev10_cagr} a year vs \res{b6040_cagr},
-with a maximum drawdown of \res{ext_lev10_max_dd} vs \res{b6040_max_dd}. Capped at two times leverage, more realistic for private
-clients, and borrowing at T-bills + 10 bps: \res{imp_lev_cap2_s10_cagr} a year (Sharpe ratio \res{imp_lev_cap2_s10_sharpe},
-maximum drawdown \res{imp_lev_cap2_s10_maxdd}).
+60/40 ($t=\res{strat_alpha_bench_t}$): given its low market exposure, the strategy earned more than the CAPM predicts. The
+alpha is only borderline significant and mainly reflects returns of Treasuries, gold and commodities, which a stock-market factor does not capture.
+\item \emph{Information ratio} \res{strat_info_ratio} against 60/40, with a tracking error of \res{strat_tracking_error}: in plain
+terms, the strategy underperformed the benchmark and deviated from it a lot. A client who measures success relative to 60/40
+should not buy it; the measure that matters for our client is the drawdown.
+\item \emph{Maximum drawdown} \res{strat_max_dd} vs \res{b6040_max_dd} (S\&P 500: \res{mkt_max_dd}): the worst peak-to-trough
+loss was about a sixth of the 60/40 loss. The worst 12-month return was \res{strat_worst_12m} vs \res{b6040_worst_12m}.
+\item \emph{At equal risk:} levered each month to a volatility target close to that of 60/40 (realised \res{ext_lev10_ann_vol};
+borrowing at a small spread over the T-bill rate, before taxes), the strategy would have earned \res{ext_lev10_cagr} a year against
+\res{b6040_cagr}, with a maximum drawdown of \res{ext_lev10_max_dd} against \res{b6040_max_dd}. With leverage capped at two times, which is more
+realistic for private clients, and borrowing at 10 bps over T-bills, it would have earned \res{imp_lev_cap2_s10_cagr} a year
+(Sharpe ratio \res{imp_lev_cap2_s10_sharpe}, maximum drawdown \res{imp_lev_cap2_s10_maxdd}).
 \end{itemize}
 
 \begin{figure}[!htb]
@@ -54,10 +56,11 @@ maximum drawdown \res{imp_lev_cap2_s10_maxdd}).
 \includegraphics[width=\textwidth]{figures/fig_drawdowns.pdf}\resmark{fig_drawdowns}
 \end{figure}
 
-\textbf{Stress periods.} Financial crisis (Nov 2007--Feb 2009): strategy \res{strat_gfc}, 60/40 \res{b6040_gfc}; Covid crash
-(Feb--Mar 2020): \res{strat_covid} vs \res{b6040_covid}; 2022 rate shock (Jan--Oct 2022): \res{strat_infl} vs \res{b6040_infl},
-because the filter also sold Treasuries. The price is paid in recoveries: 2023--Oct 2026 \res{strat_recov} vs \res{b6040_recov}.
-Figure~\ref{fig:weights} shows the shift into T-bills in falling markets.
+\textbf{Stress periods.} In the financial crisis (Nov 2007--Feb 2009) the strategy gained \res{strat_gfc} while 60/40 lost
+\res{b6040_gfc}; in the Covid crash (Feb--Mar 2020) \res{strat_covid} vs \res{b6040_covid}; in the 2022 rate shock
+(Jan--Oct 2022) \res{strat_infl} vs \res{b6040_infl}, because the trend filter also sold Treasuries. The price is paid in
+recoveries: from 2023 to Oct 2026 the strategy returned \res{strat_recov}, 60/40 \res{b6040_recov}. Figure~\ref{fig:weights}
+shows how the allocation shifts into T-bills in falling markets.
 
 \begin{figure}[!htb]
 \centering

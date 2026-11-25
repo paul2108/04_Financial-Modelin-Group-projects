@@ -1,25 +1,26 @@
 \begin{tcolorbox}[colback=fmgrey,colframe=fmdark,boxrule=0.6pt,arc=1pt,left=6pt,right=6pt,top=4pt,bottom=4pt]
 \small
 \begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.6cm}X@{}}
-Objective & Equity-like participation with bond-like drawdowns: a rules-based alternative to 60/40 for cautious
-investors who value avoiding deep losses over maximising return.\\
-Holdings & Six liquid US-listed ETFs, one per asset class: US and developed ex-US equities, US Treasuries, real estate,
-commodities and gold. Assets out of trend are held in T-bills.\\
-Rule & Monthly: (1) weights that give each asset class the same share of portfolio risk (risk parity); (2) an asset is held
-only above its 10-month average, otherwise its weight goes to T-bills.\\
-Benchmark & 60/40: 60\% SPY (S\&P 500) and 40\% AGG (US aggregate bonds), rebalanced monthly, same costs.\\
+Objective & Equity-like participation with bond-like drawdowns: a rules-based alternative to the 60/40 portfolio for
+cautious investors who care more about avoiding deep losses than about maximising return.\\
+Holdings & Six liquid US-listed ETFs, one per asset class: US equities, developed ex-US equities, US Treasuries,
+real estate, commodities and gold. Assets that are out of trend are held in T-bills.\\
+Rule & Every month: (1) weights that give each asset class the same share of portfolio risk (risk parity);
+(2) an asset is held only if its price is above its 10-month average, otherwise its weight goes to T-bills.\\
+Benchmark & 60/40 portfolio: 60\% SPY (S\&P 500) and 40\% AGG (US aggregate bonds), rebalanced monthly, same costs.\\
 Backtest & \res{sample_start}--\res{sample_end} (\res{sample_years} years), monthly, net of \res{cost_bps} per unit of turnover.\\
 Key results & Volatility \res{strat_ann_vol} vs \res{b6040_ann_vol} (60/40) $\cdot$ maximum drawdown \res{strat_max_dd} vs
 \res{b6040_max_dd} $\cdot$ Sharpe ratio \res{strat_sharpe} vs \res{b6040_sharpe} $\cdot$ average return \res{strat_ann_mean} vs
 \res{b6040_ann_mean} p.a. $\cdot$ 2008: \res{strat_ret_2008} vs \res{b6040_ret_2008}.\\
-ML check & A walk-forward hidden Markov model, Hierarchical Risk Parity and classifiers using HMM states and FinBERT tone
-of FOMC statements failed pre-registered gates (classifier AUC \res{ext_auc_min}--\res{ext_auc_max}; Section~9). None of
-the \res{imp_n_trials} variants tried was adopted.\\
-Out of sample & On unused proxy data for \res{imp_oos_start}--\res{imp_oos_end} the rule again lost far less than 60/40
-(maximum drawdown \res{imp_oos_a_maxdd} vs \res{imp_oos_6040_maxdd}; Section~8).\\
+ML check & A walk-forward hidden Markov model, Hierarchical Risk Parity and supervised classifiers using HMM states
+and FinBERT tone of FOMC statements were tested against pre-registered gates; none beat the simple rule
+(classifier AUC \res{ext_auc_min}--\res{ext_auc_max}; Section~9). None of the \res{imp_n_trials} variants tried was adopted.\\
+Out of sample & On proxy data for \res{imp_oos_start}--\res{imp_oos_end}, which the project had not used before, the rule again
+lost far less than 60/40 at its worst (maximum drawdown \res{imp_oos_a_maxdd} vs \res{imp_oos_6040_maxdd}; Section~8).\\
 \end{tabularx}
 \end{tcolorbox}
 \vspace{-2pt}
-\textbf{In one sentence:} over almost two decades the strategy matched the return per unit of risk of 60/40 with about half
-its volatility and a fraction of its worst loss, but earned a clearly lower absolute return and lags in strong equity markets.
-It is built for clients who would sell 60/40 in a crash, not for clients who want to beat it.
+\textbf{In one sentence:} over almost two decades the strategy earned the same return per unit of risk as a 60/40
+portfolio, with about half its volatility and a fraction of its worst loss, but it delivered a clearly lower
+absolute return and lags in strong equity markets. It is built for clients who would sell a 60/40 portfolio in a crash, not
+for clients who want to beat it.

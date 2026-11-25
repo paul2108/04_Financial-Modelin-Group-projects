@@ -19,6 +19,7 @@
 \usepackage[font=small,labelfont=bf,skip=3pt,position=top]{caption}
 \usepackage[para,flushleft]{threeparttable}
 \usepackage{enumitem}
+\usepackage{multicol}
 \usepackage{tcolorbox}
 \tcbuselibrary{skins,raster}
 \usepackage{tikz}
@@ -167,11 +168,15 @@ future results. This document was prepared for a university course and is not in
 \section{Interactive app}
 \input{sections/s9_app.tex}
 
-{\small
+\section*{References}
+{\footnotesize
+\renewcommand{\bibsection}{}
 \bibliographystyle{plainnat}
-\setlength{\bibsep}{1pt}
-\renewcommand{\refname}{References}
+\setlength{\bibsep}{0pt}
+\setlength{\columnsep}{14pt}
+\begin{multicols}{2}
 \bibliography{references}
+\end{multicols}
 }
 
 \end{document}

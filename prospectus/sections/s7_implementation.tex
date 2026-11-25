@@ -1,9 +1,8 @@
 \textbf{Rebalancing.} Once a month, orders are computed shortly before the close of the last trading day and executed in the
 closing auction; the backtest idealises this by using the same closing prices for the decision and the trade. All seven instruments (six ETFs and a T-bill ETF) trade billions of dollars a day, so a
 portfolio of any realistic private-client size can be traded without moving prices. A model portfolio can be applied to
-many client accounts at once. A wealth manager can also split each portfolio into four tranches that rebalance 0, 5, 10 and
-15 trading days before month-end. The result then no longer depends on one day (Section~8); the Sharpe ratio of
-\res{imp_m_sharpe} lies close to the average of the single days, at the same turnover (\res{imp_m_turnover} p.a.).
+many client accounts at once. Splitting the portfolio into four tranches with different rebalancing days removes the dependence on one day
+(Section~8) at the same turnover (\res{imp_m_turnover} p.a.).
 
 \textbf{Turnover and costs.} The strategy trades \res{strat_turnover} of its value per year, against \res{b6040_turnover}
 for 60/40: risk-parity weights change with volatility, and trend signals switch whole positions in and out. At our assumed
@@ -11,10 +10,8 @@ for 60/40: risk-parity weights change with volatility, and trend signals switch 
 \res{strat_sharpe} net. Solving $SR_{\text{strategy}}(c)=SR_{60/40}(c)$ with \texttt{fsolve} gives a \emph{break-even cost} of
 \res{breakeven_bps}: above it, the 60/40 portfolio offers the better risk-adjusted return. Bid-ask spreads of these ETFs are
 typically one basis point or less and commissions are often zero, so a cost-efficient platform is essential. At 50 bps the
-Sharpe ratio would drop to \res{sharpe_cost50}. We tested two ways to cut turnover, both fixed before the run. Skipping weight changes below two percentage points hardly
-helps (\res{imp_k_turnover} p.a.), because most trading comes from trend switches. A band around the 10-month average, which
-sells only clearly below and buys back only clearly above it, cuts turnover to \res{imp_j_turnover} but trades later and
-lowers the Sharpe ratio to \res{imp_j_sharpe}. Neither passes our gates (Section~9), so the rule stays unchanged. The backtest
+Sharpe ratio would drop to \res{sharpe_cost50}. Two ways to cut turnover (a band around the trend signal and skipping small trades, Section~9) failed our gates, because
+most trading comes from trend switches; the rule stays unchanged. The backtest
 charges costs only on the ETF side of a switch into or out of T-bills; holding the T-bill part in a money-market sweep
 rather than a T-bill ETF keeps it that way.
 

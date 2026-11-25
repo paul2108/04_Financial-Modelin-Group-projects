@@ -33,6 +33,7 @@ the Apple-silicon GPU (MPS) or a CUDA GPU when available. Background: `docs/hand
 notebook/GroupZ_RiskParity_Trend.ipynb   the backtest (ETL -> strategy -> results -> checks -> export); single source of truth
 app/strategy_core.py                     AUTO-GENERATED from the notebook cells tagged "core" (make core)
 app/streamlit_app.py                     Streamlit app using exactly that core
+results/variants_*.{csv,json}            notebook export of the tested ML variants (classifiers shown in the app)
 prospectus/main.tex, sections/*.tex      LaTeX prospectus; every number comes from results_macros.tex
 prospectus/resultref.sty                 \res{key}: value + link to the "Sources of figures" appendix
 tests/                                   unit tests (synthetic data) and notebook-vs-app consistency test
@@ -71,5 +72,9 @@ in `.vscode/settings.json` uses tectonic. A latexmk recipe for MacTeX/TeX Live i
 * The notebook is the only place where calculations are written. `make core` copies its `core` cells to `app/strategy_core.py`,
   and `tests/test_consistency.py` fails if the copy is out of date.
 * With default settings the app reproduces Table 1 of the prospectus (`pytest -m network` compares against `results/results.json`).
+* The app's *Machine learning & robustness lab* switches HRP, Ledoit-Wolf, the averaged trend signal, the HMM overlay and
+  leverage on and off with the notebook's own `core` functions, and shows the pre-registered gate verdict live. The
+  classifier/FinBERT variants are too heavy to recompute, so the app shows the monthly returns the notebook exports to
+  `results/variants_monthly.csv`. `pytest -m network` checks that the live switches reproduce those exports.
 * The prospectus prints results only through `\res{key}`. The appendix table lists, for every value, the page where it is cited,
   the notebook section that computes it, the data source and the retrieval time stamp.

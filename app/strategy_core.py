@@ -20,6 +20,9 @@ from hmmlearn.hmm import GaussianHMM
 from sklearn.preprocessing import StandardScaler
 from tqdm.auto import tqdm
 from joblib import Parallel, delayed
+from sklearn.covariance import LedoitWolf
+from scipy.cluster.hierarchy import linkage, leaves_list
+from scipy.spatial.distance import squareform
 
 
 # ---------------------------------------------------------------- parameters
@@ -357,8 +360,12 @@ def breakeven_cost(diff, x0=10.0, max_bps=1000.0):
 
 # ---------------------------------------------------------------- one call for notebook and app
 def run_strategy(data, assets=None, cov_window=252, sma_window=10, use_trend=True, weighting="erc",
-                 cost_bps=10.0, start_decision=None, end_decision=None, benchmark_weights=None):
-    """Run the full strategy (and optionally a fixed-mix benchmark) over a common decision window."""
+                 cost_bps=10.0, start_decision=None, end_decision=None, benchmark_weights=None,
+                 trend_mode="single", cov_estimator="sample"):
+    """Run the full strategy (and optionally a fixed-mix benchmark) over a common decision window.
+
+    trend_mode="average", cov_estimator="ledoit_wolf" and weighting="hrp" are the variants of Section 9.7; they use
+    target_weights_x (defined there). The prospectus settings always use target_weights."""
     assets = list(RISKY_ASSETS if assets is None else assets)
     if start_decision is None:
         start_decision = first_decision_date(data, assets, cov_window, sma_window)
@@ -366,7 +373,11 @@ def run_strategy(data, assets=None, cov_window=252, sma_window=10, use_trend=Tru
     dates = months[months >= pd.Timestamp(start_decision)]
     if end_decision is not None:
         dates = dates[dates <= pd.Timestamp(end_decision)]
-    W = target_weights(data, assets, dates, cov_window, sma_window, use_trend, weighting)
+    if weighting == "hrp" or trend_mode != "single" or cov_estimator != "sample":
+        W = target_weights_x(data, assets, dates, cov_window, sma_window, use_trend, weighting, trend_mode,
+                             cov_estimator)
+    else:
+        W = target_weights(data, assets, dates, cov_window, sma_window, use_trend, weighting)
     res = backtest(W, data, cost_bps)
     out = {"weights": W, "result": res, "returns": res["net"].rename("Strategy"),
            "gross": res["gross"].rename("Strategy (gross)"), "start_decision": pd.Timestamp(dates[0]),
@@ -519,6 +530,182 @@ def apply_risk_off(weights, risk_off, scale=0.5, growth_assets=None):
     W.loc[off, "CASH"] = W.loc[off, "CASH"] + cut.sum(axis=1)
     W.attrs = dict(weights.attrs)
     return W
+
+
+# ---------------------------------------------------------------- extended tests (Section 9.6-9.8): building blocks
+# These functions are tagged "core", so the app can switch the variants of Sections 9.7 and 9.8 on and off with
+# exactly the notebook's code. The settings below were fixed before the first run; TestConfig takes them over.
+HRP_METHOD = "single"                          # linkage of Lopez de Prado (2016)
+AVG_WINDOWS = (6, 7, 8, 9, 10, 11, 12)         # SMA lengths averaged in the robust trend signal (variant H)
+LEV_TARGETS = (0.07, 0.10)                     # ex-ante volatility targets of the levered strategy
+LEV_CAP = 4.0                                  # maximum leverage
+LEV_SPREAD = 0.005                             # borrowing cost over T-bills, p.a.
+STRESS_PERIODS = {                             # the three stress periods of the promotion gates (Section 8.2)
+    "Financial crisis": ("2007-11-30", "2009-02-28"),
+    "Covid crash": ("2020-02-29", "2020-03-31"),
+    "Inflation and rate shock": ("2022-01-31", "2022-10-31"),
+}
+
+
+def _cluster_var(cov, idx):
+    """Variance of a cluster held with inverse-variance weights."""
+    sub = cov[np.ix_(idx, idx)]
+    ivp = 1.0 / np.diag(sub)
+    ivp /= ivp.sum()
+    return float(ivp @ sub @ ivp)
+
+
+def hrp_weights(cov, method="single"):
+    """Hierarchical Risk Parity (Lopez de Prado, 2016): cluster, quasi-diagonalise, recursive bisection."""
+    cov = np.asarray(cov, dtype=float)
+    sd = np.sqrt(np.diag(cov))
+    corr = np.clip(cov / np.outer(sd, sd), -1.0, 1.0)
+    dist = np.sqrt(0.5 * (1.0 - corr))
+    np.fill_diagonal(dist, 0.0)
+    order = leaves_list(linkage(squareform(dist, checks=False), method=method)).tolist()
+    w = np.ones(len(cov))
+    clusters = [order]
+    while clusters:
+        clusters = [half for c in clusters if len(c) > 1
+                    for half in (c[:len(c) // 2], c[len(c) // 2:])]
+        for a, b in zip(clusters[0::2], clusters[1::2]):
+            va, vb = _cluster_var(cov, a), _cluster_var(cov, b)
+            alpha = 1.0 - va / (va + vb)
+            w[a] *= alpha
+            w[b] *= 1.0 - alpha
+    return w / w.sum()
+
+
+def trend_signal_avg(prices_m, windows=AVG_WINDOWS):
+    """Share of the SMAs in `windows` that the month-end price is above (NaN until all SMAs exist)."""
+    sigs = [trend_signal(prices_m, w) for w in windows]
+    stacked = np.stack([s.to_numpy() for s in sigs])
+    return pd.DataFrame(stacked.mean(axis=0), index=prices_m.index, columns=prices_m.columns)
+
+
+def covariance(X, cov_estimator="sample"):
+    """Covariance matrix of the daily returns X (rows = days): sample estimate or Ledoit-Wolf shrinkage."""
+    if cov_estimator == "ledoit_wolf":
+        return LedoitWolf().fit(X).covariance_
+    if cov_estimator == "sample":
+        return np.atleast_2d(np.cov(X, rowvar=False))
+    raise ValueError(f"unknown covariance estimator '{cov_estimator}'")
+
+
+def target_weights_x(data, assets, decision_dates, cov_window=252, sma_window=10, use_trend=True,
+                     weighting="erc", trend_mode="single", cov_estimator="sample", avg_windows=AVG_WINDOWS,
+                     hrp_method=HRP_METHOD):
+    """Extended copy of target_weights: adds HRP, the averaged trend signal and Ledoit-Wolf covariances.
+    Also stores the ex-ante volatility of each month's portfolio (used for the levered variant).
+    With the default arguments it reproduces target_weights exactly (checked in Section 9.6)."""
+    assets = list(assets)
+    px = data.prices_d[assets].dropna()
+    rd = px.pct_change(fill_method=None).iloc[1:]
+    if trend_mode == "single":
+        sig = trend_signal(data.prices_m[assets], sma_window)
+    elif trend_mode == "average":
+        sig = trend_signal_avg(data.prices_m[assets], avg_windows)
+    else:
+        raise ValueError(trend_mode)
+    rows, vols, fallbacks = [], {}, 0
+    for t in decision_dates:
+        window = rd.loc[:t].iloc[-cov_window:]
+        if len(window) < cov_window:
+            raise ValueError(f"{t.date()}: only {len(window)} daily returns")
+        cov = covariance(window.to_numpy(), cov_estimator)
+        if weighting == "erc":
+            w, ok = erc_weights(cov)
+            fallbacks += int(not ok)
+        elif weighting == "hrp":
+            w = hrp_weights(cov, hrp_method)
+        elif weighting == "inverse_vol":
+            w = inverse_vol_weights(cov)
+        elif weighting == "equal":
+            w = np.full(len(assets), 1.0 / len(assets))
+        else:
+            raise ValueError(weighting)
+        w = pd.Series(w, index=assets, dtype=float)
+        if use_trend:
+            on = sig.loc[t, assets]
+            if on.isna().any():
+                raise ValueError(f"{t.date()}: trend signal not available")
+            w = w * on
+        wv = w.to_numpy()
+        vols[t] = float(np.sqrt(252.0 * wv @ cov @ wv))
+        w["CASH"] = 1.0 - w.sum()
+        rows.append(w.rename(t))
+    W = pd.DataFrame(rows)
+    W.index.name = "decision_date"
+    W.attrs["exante_vol"] = pd.Series(vols)
+    W.attrs["fsolve_fallbacks"] = fallbacks
+    return W
+
+
+def exante_vol(W, data, cov_window=252, cov_estimator="sample"):
+    """Ex-ante volatility p.a. of the risky part of each month's target weights (same covariance window as
+    the weights). Recomputes W.attrs["exante_vol"] for weights that were changed afterwards (e.g. an overlay)."""
+    assets = [c for c in W.columns if c != "CASH"]
+    rd = data.prices_d[assets].dropna().pct_change(fill_method=None).iloc[1:]
+    out = {}
+    for t, w in W[assets].iterrows():
+        cov = covariance(rd.loc[:t].iloc[-cov_window:].to_numpy(), cov_estimator)
+        wv = w.to_numpy(dtype=float)
+        out[t] = float(np.sqrt(252.0 * wv @ cov @ wv))
+    return pd.Series(out)
+
+
+def levered_returns(W, r_net, rf_m, target, cap=LEV_CAP, spread=LEV_SPREAD, cost_bps=10.0, vol=None):
+    """Strategy levered each month to an ex-ante volatility `target` (Section 9.8). Returns (returns, leverage).
+
+    L = target / ex-ante volatility, capped at `cap`. Only the risky exposure above own capital is borrowed
+    (L x risky share - 1, if positive; cash held by the trend filter offsets the loan first) and costs `spread`
+    p.a. over T-bills. Changes in leverage pay cost_bps on the extra turnover. vol: ex-ante volatility per
+    decision date (default: W.attrs["exante_vol"])."""
+    vol = (W.attrs["exante_vol"] if vol is None else vol).reindex(W.index)
+    L = (target / vol.replace(0.0, np.nan)).clip(upper=cap).fillna(cap)
+    risky_share = 1.0 - W["CASH"]
+    # decision at month-end t applies to the return earned in month t+1
+    L_ret = pd.Series(L.to_numpy()[:-1], index=W.index[1:]).reindex(r_net.index)
+    share_ret = pd.Series(risky_share.to_numpy()[:-1], index=W.index[1:]).reindex(r_net.index)
+    rfm = rf_m.reindex(r_net.index)
+    dL = L_ret.diff().abs().fillna(abs(L_ret.iloc[0] - 1.0))
+    cost = cost_bps / 1e4 * dL * share_ret
+    # Borrowing = risky exposure above own capital. Cash held by the trend filter offsets it first, so a
+    # month that is mostly in T-bills needs little or no loan (fixed 23 Nov 2026: before, (L - 1) was charged).
+    borrow = (L_ret * share_ret - 1.0).clip(lower=0.0)
+    r_L = rfm + L_ret * (r_net - rfm) - borrow * spread / 12 - cost
+    return r_L, L_ret
+
+
+def stress_return(r, a, b):
+    return float(np.prod(1.0 + r.loc[a:b]) - 1.0)
+
+
+def gate_verdict(r, r_ref, rf, periods, need):
+    """Pre-registered promotion gates (Section 9.2) of variant r against reference r_ref on the months both
+    have: Sharpe ratio not lower, maximum drawdown not deeper, better in at least `need` of the stress `periods`."""
+    idx = r.index.intersection(r_ref.index)
+    r, r_ref = r.loc[idx], r_ref.loc[idx]
+    ps, pr = performance_summary(r, rf), performance_summary(r_ref, rf)
+    wins = sum(stress_return(r, a, b) > stress_return(r_ref, a, b) for a, b in periods.values())
+    ok = (ps["sharpe"] >= pr["sharpe"]) and (ps["max_dd"] >= pr["max_dd"]) and wins >= need
+    return {"Sharpe": ps["sharpe"], "Sharpe A": pr["sharpe"], "Sharpe >= A": ps["sharpe"] >= pr["sharpe"],
+            "MDD %": 100 * ps["max_dd"], "MDD A %": 100 * pr["max_dd"], "MDD not deeper": ps["max_dd"] >= pr["max_dd"],
+            "stress wins": f"{wins} of {len(periods)}", "PROMOTED": ok}
+
+
+def gate_reason(g, need, reference="A"):
+    """One-line explanation of a gate_verdict() result."""
+    if g["PROMOTED"]:
+        return "passes all gates"
+    out = []
+    if not g["Sharpe >= A"]:
+        out.append(f"lower Sharpe ratio than {reference}")
+    if not g["MDD not deeper"]:
+        out.append(f"deeper drawdown than {reference}")
+    if int(g["stress wins"].split()[0]) < need:
+        out.append(f"better in only {g['stress wins']} stress periods (need {need})")
+    return "; ".join(out)
 
 
 # ---------------------------------------------------------------- improvement tests: building blocks (Section 9.14)

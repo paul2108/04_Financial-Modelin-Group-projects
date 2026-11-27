@@ -12,7 +12,7 @@ bootstrap, rebalancing day, subsamples). Sections 9.14–9.21 test changes to th
 bands, tranche rebalancing (daily engine), an out-of-sample test on 1992–2007 proxy data, TIP, leverage financing, a EUR
 investor view and the deflated Sharpe ratio. A full run takes about 2–3 minutes (with the local cache in `notebook/cache/`)
 and needs internet access to Yahoo Finance, FRED (euro interest rate), federalreserve.gov and Hugging Face. FinBERT uses
-the Apple-silicon GPU (MPS) or a CUDA GPU when available. Background: `docs/handover/`.
+the Apple-silicon GPU (MPS) or a CUDA GPU when available.
 
 | | |
 |---|---|

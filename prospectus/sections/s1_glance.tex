@@ -5,9 +5,8 @@ Objective & Equity-like participation with bond-like drawdowns: a rules-based al
 cautious investors who care more about avoiding deep losses than about maximising return.\\
 Holdings & Six liquid US-listed ETFs, one per asset class: US equities, developed ex-US equities, US Treasuries,
 real estate, commodities and gold. Assets that are out of trend are held in T-bills.\\
-Rule & Every month, using only prices up to that day's close: (1) weights that give each asset class the same share of
-portfolio risk (risk parity); (2) an asset is held only if its price is above its 10-month average, otherwise its weight
-goes to T-bills; (3) trade to these weights and hold them for one month.\\
+Rule & Every month: (1) weights that give each asset class the same share of portfolio risk (risk parity);
+(2) an asset is held only if its price is above its 10-month average, otherwise its weight goes to T-bills.\\
 Benchmark & 60/40 portfolio: 60\% SPY (S\&P 500) and 40\% AGG (US aggregate bonds), rebalanced monthly, same costs.\\
 Backtest & \res{sample_start}--\res{sample_end} (\res{sample_years} years), monthly, net of \res{cost_bps} per unit of turnover.\\
 Key results & Volatility \res{strat_ann_vol} vs \res{b6040_ann_vol} (60/40) $\cdot$ maximum drawdown \res{strat_max_dd} vs

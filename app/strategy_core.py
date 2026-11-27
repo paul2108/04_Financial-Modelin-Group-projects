@@ -26,22 +26,22 @@ from scipy.spatial.distance import squareform
 
 
 # ---------------------------------------------------------------- parameters
-START = "2006-01-01"              # first day of daily data (inclusive)
-END = "2026-11-01"                # last day of daily data (exclusive) -> last month = Oct 2026
+START = "2006-01-01"  # first day of daily data (inclusive)
+END = "2026-11-01"  # last day of daily data (exclusive) -> last month = Oct 2026
 
-RISKY_ASSETS = ["SPY", "EFA", "IEF", "VNQ", "DBC", "GLD"]   # the six asset classes held
-BENCHMARK_6040 = {"SPY": 0.60, "AGG": 0.40}                  # balanced benchmark (investable)
-MARKET = "^SP500TR"               # S&P 500 total return index: market proxy for CAPM alpha/beta
-RF_TICKER = "^IRX"                # 13-week US T-bill yield (% p.a.): risk-free rate and cash return
-OTHER_TICKERS = ["AGG", MARKET]   # benchmark building blocks that the strategy does not hold
+RISKY_ASSETS = ["SPY", "EFA", "IEF", "VNQ", "DBC", "GLD"]  # the six asset classes held
+BENCHMARK_6040 = {"SPY": 0.60, "AGG": 0.40}  # balanced benchmark (investable)
+MARKET = "^SP500TR"  # S&P 500 total return index: market proxy for CAPM alpha/beta
+RF_TICKER = "^IRX"  # 13-week US T-bill yield (% p.a.): risk-free rate and cash return
+OTHER_TICKERS = ["AGG", MARKET]  # benchmark building blocks that the strategy does not hold
 ALL_TICKERS = RISKY_ASSETS + OTHER_TICKERS + [RF_TICKER]
 
-COV_WINDOW = 252                  # trading days used to estimate the covariance matrix
-SMA_WINDOW = 10                   # months in the trend filter's moving average (Faber, 2007)
-COST_BPS = 10.0                   # transaction cost in basis points per unit of turnover
-WEIGHTING = "erc"                 # "erc" (equal risk contribution), "inverse_vol" or "equal"
-NW_LAGS = 4                       # Newey-West lags for the t-statistic of alpha
-PERIODS = 12                      # monthly data -> 12 periods per year
+COV_WINDOW = 252  # trading days used to estimate the covariance matrix
+SMA_WINDOW = 10  # months in the trend filter's moving average (Faber, 2007)
+COST_BPS = 10.0  # transaction cost in basis points per unit of turnover
+WEIGHTING = "erc"  # "erc" (equal risk contribution), "inverse_vol" or "equal"
+NW_LAGS = 4  # Newey-West lags for the t-statistic of alpha
+PERIODS = 12  # monthly data -> 12 periods per year
 
 ASSET_NAMES = {
     "SPY": "US equities (S&P 500)",
@@ -57,8 +57,10 @@ ASSET_NAMES = {
 
 REPO_URL = "https://github.com/paul2108/04_Financial-Modelin-Group-projects"
 APP_URL = "https://04financial-modelin-group-projects-u7jx8pavhcsfkqmkps5b5d.streamlit.app"
-NOTEBOOK_VIEW_URL = ("https://nbviewer.org/github/paul2108/04_Financial-Modelin-Group-projects/"
-                     "blob/main/notebook/GroupZ_RiskParity_Trend.ipynb")
+NOTEBOOK_VIEW_URL = (
+    "https://nbviewer.org/github/paul2108/04_Financial-Modelin-Group-projects/"
+    "blob/main/notebook/GroupZ_RiskParity_Trend.ipynb"
+)
 
 
 # ---------------------------------------------------------------- extract
@@ -72,18 +74,19 @@ def download_prices(tickers, start, end, retries=3, pause=5.0):
     last_error = None
     for attempt in range(1, retries + 1):
         try:
-            raw = yf.download(tickers, start=start, end=end, interval="1d",
-                              auto_adjust=True, progress=False, threads=True)
+            raw = yf.download(
+                tickers, start=start, end=end, interval="1d", auto_adjust=True, progress=False, threads=True
+            )
             if raw is not None and not raw.empty:
                 close = raw["Close"]
-                if isinstance(close, pd.Series):          # single ticker -> Series
+                if isinstance(close, pd.Series):  # single ticker -> Series
                     close = close.to_frame(tickers[0])
                 close = close.reindex(columns=tickers)
                 missing = [t for t in tickers if close[t].notna().sum() == 0]
                 if not missing:
                     return close
                 last_error = RuntimeError(f"no data returned for {missing}")
-        except Exception as exc:                          # network / rate-limit errors
+        except Exception as exc:  # network / rate-limit errors
             last_error = exc
         if attempt < retries:
             time.sleep(pause * attempt)
@@ -94,11 +97,12 @@ def download_prices(tickers, start, end, retries=3, pause=5.0):
 @dataclass
 class MarketData:
     """LOAD: the clean, aligned data that every later step reads."""
-    prices_d: pd.DataFrame   # daily adjusted close prices (all tickers incl. ^IRX yield)
-    rets_d: pd.DataFrame     # daily simple returns of the tradable tickers
-    prices_m: pd.DataFrame   # month-end prices of the tradable tickers
-    rets_m: pd.DataFrame     # monthly simple returns, labelled with the month they are earned in
-    rf_m: pd.Series          # risk-free return earned in month t (known at the end of month t-1)
+
+    prices_d: pd.DataFrame  # daily adjusted close prices (all tickers incl. ^IRX yield)
+    rets_d: pd.DataFrame  # daily simple returns of the tradable tickers
+    prices_m: pd.DataFrame  # month-end prices of the tradable tickers
+    rets_m: pd.DataFrame  # monthly simple returns, labelled with the month they are earned in
+    rf_m: pd.Series  # risk-free return earned in month t (known at the end of month t-1)
 
 
 def clean_prices(raw):
@@ -158,23 +162,22 @@ def erc_weights(cov, tol=1e-8):
     """
     cov = np.atleast_2d(np.asarray(cov, dtype=float))
     n = cov.shape[0]
-    S = cov / np.mean(np.diag(cov))                 # rescale: the solution does not depend on the scale
+    S = cov / np.mean(np.diag(cov))  # rescale: the solution does not depend on the scale
     iv = 1.0 / np.sqrt(np.diag(S))
-    x0 = iv / np.sqrt(iv @ S @ iv)                  # inverse-vol start, scaled so that x0' S x0 = 1
+    x0 = iv / np.sqrt(iv @ S @ iv)  # inverse-vol start, scaled so that x0' S x0 = 1
 
     def equations(y):
         x = np.exp(y)
         return S @ x - 1.0 / (n * x)
 
-    def jacobian(y):                                # d equations_i / d y_j
+    def jacobian(y):  # d equations_i / d y_j
         x = np.exp(y)
         return S * x[None, :] + np.diag(1.0 / (n * x))
 
     y, _info, ier, _msg = fsolve(equations, np.log(x0), fprime=jacobian, full_output=True, xtol=1e-12)
     w = np.exp(y)
     w = w / w.sum()
-    ok = bool(ier == 1 and np.all(np.isfinite(w))
-              and np.max(np.abs(risk_contributions(w, cov) - 1.0 / n)) < tol)
+    ok = bool(ier == 1 and np.all(np.isfinite(w)) and np.max(np.abs(risk_contributions(w, cov) - 1.0 / n)) < tol)
     if not ok:
         return inverse_vol_weights(cov), False
     return w, True
@@ -192,20 +195,19 @@ def first_decision_date(data, assets, cov_window=252, sma_window=10):
     """First month-end at which the covariance window and every moving average are complete."""
     assets = list(assets)
     px = data.prices_d[assets].dropna()
-    first_cov = px.index[cov_window]                 # cov_window returns need cov_window + 1 prices
+    first_cov = px.index[cov_window]  # cov_window returns need cov_window + 1 prices
     first_sig = trend_signal(data.prices_m[assets], sma_window).dropna().index[0]
     months = data.prices_m.index
     return months[(months >= first_cov) & (months >= first_sig)][0]
 
 
-def target_weights(data, assets, decision_dates, cov_window=252, sma_window=10,
-                   use_trend=True, weighting="erc"):
+def target_weights(data, assets, decision_dates, cov_window=252, sma_window=10, use_trend=True, weighting="erc"):
     """Target weights decided at each month-end (rows) for the assets plus CASH (columns).
 
     Only information up to and including the decision date is used.
     """
     assets = list(assets)
-    px = data.prices_d[assets].dropna()              # days on which all held ETFs trade
+    px = data.prices_d[assets].dropna()  # days on which all held ETFs trade
     rd = px.pct_change(fill_method=None).iloc[1:]
     sig = trend_signal(data.prices_m[assets], sma_window)
     rows, fallbacks = [], 0
@@ -243,8 +245,11 @@ def constant_weights(weights, decision_dates):
     if "CASH" not in w.index:
         w["CASH"] = 1.0 - w.sum()
     cols = [c for c in w.index if c != "CASH"] + ["CASH"]
-    W = pd.DataFrame([w[cols].to_numpy()] * len(decision_dates),
-                     index=pd.DatetimeIndex(decision_dates, name="decision_date"), columns=cols)
+    W = pd.DataFrame(
+        [w[cols].to_numpy()] * len(decision_dates),
+        index=pd.DatetimeIndex(decision_dates, name="decision_date"),
+        columns=cols,
+    )
     W.attrs["fsolve_fallbacks"] = 0
     return W
 
@@ -264,11 +269,11 @@ def backtest(weights, data, cost_bps=10.0):
     R = R[cols]
     months = data.rets_m.index
     drifted = pd.Series(0.0, index=cols)
-    drifted["CASH"] = 1.0                            # the investor starts fully in cash
+    drifted["CASH"] = 1.0  # the investor starts fully in cash
     rows = []
     for t, w in weights.iterrows():
         pos = months.get_loc(t)
-        if pos + 1 >= len(months):                   # last decision: no next-month return yet
+        if pos + 1 >= len(months):  # last decision: no next-month return yet
             break
         t_next = months[pos + 1]
         r = R.loc[t_next]
@@ -279,8 +284,17 @@ def backtest(weights, data, cost_bps=10.0):
         cost = cost_bps / 1e4 * turnover
         gross = float((w * r).sum())
         net = (1.0 - cost) * (1.0 + gross) - 1.0
-        rows.append({"date": t_next, "gross": gross, "net": net, "turnover": turnover,
-                     "cost": cost, "cash_weight": float(w["CASH"]), "rf": float(r["CASH"])})
+        rows.append(
+            {
+                "date": t_next,
+                "gross": gross,
+                "net": net,
+                "turnover": turnover,
+                "cost": cost,
+                "cash_weight": float(w["CASH"]),
+                "rf": float(r["CASH"]),
+            }
+        )
         drifted = w * (1.0 + r) / (1.0 + gross)
     return pd.DataFrame(rows).set_index("date")
 
@@ -335,8 +349,7 @@ def performance_summary(r, rf, benchmark=None, market=None, turnover=None, perio
         bench = benchmark.reindex(r.index)
         active = r - bench
         out["tracking_error"] = np.sqrt(periods) * active.std(ddof=1)
-        out["info_ratio"] = (periods * active.mean() / out["tracking_error"]
-                             if out["tracking_error"] > 0 else np.nan)
+        out["info_ratio"] = periods * active.mean() / out["tracking_error"] if out["tracking_error"] > 0 else np.nan
         b, a, t = capm_regression(ex, bench - rf, nw_lags)
         out.update(beta_bench=b, alpha_bench=periods * a, alpha_bench_t=t)
     if turnover is not None:
@@ -359,9 +372,20 @@ def breakeven_cost(diff, x0=10.0, max_bps=1000.0):
 
 
 # ---------------------------------------------------------------- one call for notebook and app
-def run_strategy(data, assets=None, cov_window=252, sma_window=10, use_trend=True, weighting="erc",
-                 cost_bps=10.0, start_decision=None, end_decision=None, benchmark_weights=None,
-                 trend_mode="single", cov_estimator="sample"):
+def run_strategy(
+    data,
+    assets=None,
+    cov_window=252,
+    sma_window=10,
+    use_trend=True,
+    weighting="erc",
+    cost_bps=10.0,
+    start_decision=None,
+    end_decision=None,
+    benchmark_weights=None,
+    trend_mode="single",
+    cov_estimator="sample",
+):
     """Run the full strategy (and optionally a fixed-mix benchmark) over a common decision window.
 
     trend_mode="average", cov_estimator="ledoit_wolf" and weighting="hrp" are the variants of Section 9.7; they use
@@ -374,14 +398,20 @@ def run_strategy(data, assets=None, cov_window=252, sma_window=10, use_trend=Tru
     if end_decision is not None:
         dates = dates[dates <= pd.Timestamp(end_decision)]
     if weighting == "hrp" or trend_mode != "single" or cov_estimator != "sample":
-        W = target_weights_x(data, assets, dates, cov_window, sma_window, use_trend, weighting, trend_mode,
-                             cov_estimator)
+        W = target_weights_x(
+            data, assets, dates, cov_window, sma_window, use_trend, weighting, trend_mode, cov_estimator
+        )
     else:
         W = target_weights(data, assets, dates, cov_window, sma_window, use_trend, weighting)
     res = backtest(W, data, cost_bps)
-    out = {"weights": W, "result": res, "returns": res["net"].rename("Strategy"),
-           "gross": res["gross"].rename("Strategy (gross)"), "start_decision": pd.Timestamp(dates[0]),
-           "fsolve_fallbacks": W.attrs["fsolve_fallbacks"]}
+    out = {
+        "weights": W,
+        "result": res,
+        "returns": res["net"].rename("Strategy"),
+        "gross": res["gross"].rename("Strategy (gross)"),
+        "start_decision": pd.Timestamp(dates[0]),
+        "fsolve_fallbacks": W.attrs["fsolve_fallbacks"],
+    }
     if benchmark_weights is not None:
         Wb = constant_weights(benchmark_weights, dates)
         resb = backtest(Wb, data, cost_bps)
@@ -391,25 +421,26 @@ def run_strategy(data, assets=None, cov_window=252, sma_window=10, use_trend=Tru
 
 
 # ---------------------------------------------------------------- machine-learning extension: regime filter
-logging.getLogger("hmmlearn").setLevel(logging.ERROR)   # silence "not converging" messages of single EM runs
+logging.getLogger("hmmlearn").setLevel(logging.ERROR)  # silence "not converging" messages of single EM runs
 
 
 @dataclass(frozen=True)
 class HMMConfig:
     """All assumptions of the regime filter, fixed BEFORE looking at results (no tuning on the backtest)."""
-    start: str = "1990-01-01"        # first day of the S&P 500 data used to train the HMM
-    n_states: int = 2                # calm vs turbulent
-    seeds: tuple = (0, 1, 2, 3, 4)   # EM restarts; the best one by TRAINING log-likelihood is kept
-    n_iter: int = 100                # EM iterations per restart
-    vol_window: int = 21             # trading days for realised volatility (feature)
-    prob_threshold: float = 0.5      # risk-off if P(turbulent) > threshold
-    risk_off_scale: float = 0.5      # growth assets are scaled to 50% in risk-off months
-    vol_quantile: float = 0.8        # simple (non-ML) baseline: volatility above its 80th percentile so far
+
+    start: str = "1990-01-01"  # first day of the S&P 500 data used to train the HMM
+    n_states: int = 2  # calm vs turbulent
+    seeds: tuple = (0, 1, 2, 3, 4)  # EM restarts; the best one by TRAINING log-likelihood is kept
+    n_iter: int = 100  # EM iterations per restart
+    vol_window: int = 21  # trading days for realised volatility (feature)
+    prob_threshold: float = 0.5  # risk-off if P(turbulent) > threshold
+    risk_off_scale: float = 0.5  # growth assets are scaled to 50% in risk-off months
+    vol_quantile: float = 0.8  # simple (non-ML) baseline: volatility above its 80th percentile so far
     stress_threshold: float = -0.05  # ex-post label: S&P 500 falls by more than 5% in the next month
 
 
 HMM_CFG = HMMConfig()
-GROWTH_ASSETS = ["SPY", "EFA", "VNQ", "DBC"]   # assets cut in risk-off months; IEF, GLD and T-bills are kept
+GROWTH_ASSETS = ["SPY", "EFA", "VNQ", "DBC"]  # assets cut in risk-off months; IEF, GLD and T-bills are kept
 
 
 def regime_features(prices, vol_window=21):
@@ -430,8 +461,9 @@ def fit_hmm(X, cfg=HMM_CFG):
     Z = scaler.transform(X)
     best = None
     for seed in cfg.seeds:
-        model = GaussianHMM(n_components=cfg.n_states, covariance_type="full", n_iter=cfg.n_iter,
-                            tol=1e-3, random_state=seed)
+        model = GaussianHMM(
+            n_components=cfg.n_states, covariance_type="full", n_iter=cfg.n_iter, tol=1e-3, random_state=seed
+        )
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             model.fit(Z)
@@ -448,8 +480,9 @@ def filtered_state_probs(model, scaler, X):
     (unlike Viterbi or forward-backward smoothing over the whole sample)."""
     Z = scaler.transform(X)
     n = model.n_components
-    log_b = np.column_stack([multivariate_normal.logpdf(Z, mean=model.means_[k], cov=model.covars_[k])
-                             for k in range(n)])
+    log_b = np.column_stack(
+        [multivariate_normal.logpdf(Z, mean=model.means_[k], cov=model.covars_[k]) for k in range(n)]
+    )
     A = model.transmat_
     out = np.empty((len(Z), n))
     prev = model.startprob_
@@ -468,7 +501,8 @@ def map_years(step, features, items, cfg, n_jobs=1):
     if n_jobs != 1:
         try:
             return Parallel(n_jobs=n_jobs, return_as="generator")(
-                delayed(step)(features, fy, ds, cfg) for fy, ds in items)
+                delayed(step)(features, fy, ds, cfg) for fy, ds in items
+            )
         except OSError:
             pass
     return (step(features, fy, ds, cfg) for fy, ds in items)
@@ -476,9 +510,9 @@ def map_years(step, features, items, cfg, n_jobs=1):
 
 def _hmm_fit_filter(features, fit_year, dates, cfg):
     """One walk-forward step: fit on data up to 31 Dec of `fit_year`, filtered P(turbulent) at `dates`."""
-    train = features.loc[:f"{fit_year}-12-31"]
+    train = features.loc[: f"{fit_year}-12-31"]
     model, scaler, turb = fit_hmm(train.to_numpy(), cfg)
-    upto = features.loc[:max(dates)]
+    upto = features.loc[: max(dates)]
     p = pd.Series(filtered_state_probs(model, scaler, upto.to_numpy())[:, turb], index=upto.index)
     return {t: float(p.loc[:t].iloc[-1]) for t in dates}
 
@@ -535,12 +569,12 @@ def apply_risk_off(weights, risk_off, scale=0.5, growth_assets=None):
 # ---------------------------------------------------------------- extended tests (Section 9.6-9.8): building blocks
 # These functions are tagged "core", so the app can switch the variants of Sections 9.7 and 9.8 on and off with
 # exactly the notebook's code. The settings below were fixed before the first run; TestConfig takes them over.
-HRP_METHOD = "single"                          # linkage of Lopez de Prado (2016)
-AVG_WINDOWS = (6, 7, 8, 9, 10, 11, 12)         # SMA lengths averaged in the robust trend signal (variant H)
-LEV_TARGETS = (0.07, 0.10)                     # ex-ante volatility targets of the levered strategy
-LEV_CAP = 4.0                                  # maximum leverage
-LEV_SPREAD = 0.005                             # borrowing cost over T-bills, p.a.
-STRESS_PERIODS = {                             # the three stress periods of the promotion gates (Section 8.2)
+HRP_METHOD = "single"  # linkage of Lopez de Prado (2016)
+AVG_WINDOWS = (6, 7, 8, 9, 10, 11, 12)  # SMA lengths averaged in the robust trend signal (variant H)
+LEV_TARGETS = (0.07, 0.10)  # ex-ante volatility targets of the levered strategy
+LEV_CAP = 4.0  # maximum leverage
+LEV_SPREAD = 0.005  # borrowing cost over T-bills, p.a.
+STRESS_PERIODS = {  # the three stress periods of the promotion gates (Section 8.2)
     "Financial crisis": ("2007-11-30", "2009-02-28"),
     "Covid crash": ("2020-02-29", "2020-03-31"),
     "Inflation and rate shock": ("2022-01-31", "2022-10-31"),
@@ -566,8 +600,7 @@ def hrp_weights(cov, method="single"):
     w = np.ones(len(cov))
     clusters = [order]
     while clusters:
-        clusters = [half for c in clusters if len(c) > 1
-                    for half in (c[:len(c) // 2], c[len(c) // 2:])]
+        clusters = [half for c in clusters if len(c) > 1 for half in (c[: len(c) // 2], c[len(c) // 2 :])]
         for a, b in zip(clusters[0::2], clusters[1::2]):
             va, vb = _cluster_var(cov, a), _cluster_var(cov, b)
             alpha = 1.0 - va / (va + vb)
@@ -592,9 +625,19 @@ def covariance(X, cov_estimator="sample"):
     raise ValueError(f"unknown covariance estimator '{cov_estimator}'")
 
 
-def target_weights_x(data, assets, decision_dates, cov_window=252, sma_window=10, use_trend=True,
-                     weighting="erc", trend_mode="single", cov_estimator="sample", avg_windows=AVG_WINDOWS,
-                     hrp_method=HRP_METHOD):
+def target_weights_x(
+    data,
+    assets,
+    decision_dates,
+    cov_window=252,
+    sma_window=10,
+    use_trend=True,
+    weighting="erc",
+    trend_mode="single",
+    cov_estimator="sample",
+    avg_windows=AVG_WINDOWS,
+    hrp_method=HRP_METHOD,
+):
     """Extended copy of target_weights: adds HRP, the averaged trend signal and Ledoit-Wolf covariances.
     Also stores the ex-ante volatility of each month's portfolio (used for the levered variant).
     With the default arguments it reproduces target_weights exactly (checked in Section 9.6)."""
@@ -689,9 +732,16 @@ def gate_verdict(r, r_ref, rf, periods, need):
     ps, pr = performance_summary(r, rf), performance_summary(r_ref, rf)
     wins = sum(stress_return(r, a, b) > stress_return(r_ref, a, b) for a, b in periods.values())
     ok = (ps["sharpe"] >= pr["sharpe"]) and (ps["max_dd"] >= pr["max_dd"]) and wins >= need
-    return {"Sharpe": ps["sharpe"], "Sharpe A": pr["sharpe"], "Sharpe >= A": ps["sharpe"] >= pr["sharpe"],
-            "MDD %": 100 * ps["max_dd"], "MDD A %": 100 * pr["max_dd"], "MDD not deeper": ps["max_dd"] >= pr["max_dd"],
-            "stress wins": f"{wins} of {len(periods)}", "PROMOTED": ok}
+    return {
+        "Sharpe": ps["sharpe"],
+        "Sharpe A": pr["sharpe"],
+        "Sharpe >= A": ps["sharpe"] >= pr["sharpe"],
+        "MDD %": 100 * ps["max_dd"],
+        "MDD A %": 100 * pr["max_dd"],
+        "MDD not deeper": ps["max_dd"] >= pr["max_dd"],
+        "stress wins": f"{wins} of {len(periods)}",
+        "PROMOTED": ok,
+    }
 
 
 def gate_reason(g, need, reference="A"):
@@ -777,11 +827,7 @@ def backtest_band(weights, data, cost_bps=10.0, band=0.0):
             break
         w = target.copy()
         if band > 0:
-            keep = (
-                ((target[assets] - drifted[assets]).abs() < band)
-                & (target[assets] > 0)
-                & (drifted[assets] > 0)
-            )
+            keep = ((target[assets] - drifted[assets]).abs() < band) & (target[assets] > 0) & (drifted[assets] > 0)
             w[assets] = np.where(keep, drifted[assets], target[assets])
             cash = 1.0 - float(w[assets].sum())
             if cash < 0.0:

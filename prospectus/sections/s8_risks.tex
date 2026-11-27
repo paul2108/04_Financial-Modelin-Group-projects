@@ -6,8 +6,8 @@ filter limited the 2022 loss to \res{strat_ret_2022} but cannot prevent sudden s
 \item \textbf{Trend reversals.} After a sharp fall and quick rebound the filter sells late and buys back late. In 2020 the
 strategy returned \res{strat_ret_2020} while 60/40 earned \res{b6040_ret_2020}. In strong bull markets the client will often
 lag: the strategy beat 60/40 in only \res{years_beating_6040} of \res{n_years_cal} calendar years.
-\item \textbf{Look-ahead bias.} Every weight uses only prices up to its decision date; the truncation test of Section~4
-confirms this.
+\item \textbf{Look-ahead bias.} Every weight uses only prices up to its decision date. We test this directly: rerunning the
+backtest on data that end in December 2015 reproduces exactly the same weights up to that month.
 \item \textbf{Survivorship and hindsight bias.} We hold broad asset classes instead of picked winners, and their ETFs are
 among the largest of their kind. Still, the universe is chosen today. Leaving out any one asset class gives Sharpe ratios
 between \res{loo_sharpe_min} and \res{loo_sharpe_max} (worst without \res{loo_worst_asset}; without gold \res{loo_sharpe_nogold})

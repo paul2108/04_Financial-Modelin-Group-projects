@@ -21,18 +21,16 @@
 \usepackage{enumitem}
 \usepackage{multicol}
 \usepackage{tcolorbox}
-\usepackage{titlesec}
 \usepackage[authoryear,round]{natbib}
 \usepackage{fancyhdr}
-\PassOptionsToPackage{hyphens}{url}   % long URLs may break after a hyphen instead of running into the margin
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black]{hyperref}
-\urlstyle{same}
+% long URLs (app, repository) may also break at hyphens instead of running into the margin
+\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks\do\-}
 \usepackage{resultref}
 
 \definecolor{fmdark}{HTML}{0D366B}
 \definecolor{fmlight}{HTML}{CDE2FB}
 \definecolor{fmgrey}{HTML}{F0EFEC}
-\definecolor{fmmuted}{HTML}{5B6676}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{4pt}
 \setlist{nosep,leftmargin=1.2em}
@@ -43,14 +41,10 @@
 \fancyfoot[C]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \newcommand{\sectionrule}{}
-% Section headings: navy number badge, navy title, fine pale-blue rule underneath
-\newcommand{\sectionbadge}[1]{{\setlength{\fboxsep}{2.2pt}%
-  \colorbox{fmdark}{\makebox[1.15em][c]{\normalsize\bfseries\color{white}#1}}}}
-\titleformat{\section}{\large\bfseries\color{fmdark}}{\sectionbadge{\thesection}}{0.5em}{}
-  [\vspace{1.5pt}{\color{fmlight}\titlerule[0.9pt]}]
-\titlespacing*{\section}{0pt}{9pt}{3pt}
-\titleformat{\subsection}{\normalsize\bfseries\color{fmdark}}{\thesubsection}{0.6em}{}
-\titlespacing*{\subsection}{0pt}{5pt}{1pt}
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{0pt}{8pt}{3pt}{\large\bfseries\color{fmdark}}}
+\renewcommand\subsection{\@startsection{subsection}{2}{0pt}{5pt}{1pt}{\normalsize\bfseries\color{fmdark}}}
+\makeatother
 
 \input{results_macros.tex}
 % No appendix (7-page limit): every value links straight to the notebook section that computes it
@@ -65,77 +59,33 @@
 \begin{document}
 
 % ------------------------------------------------------------------ cover (not counted)
-\newcommand{\coverlabel}[1]{{\scriptsize\bfseries\color{fmmuted}\MakeUppercase{#1}}\par\vspace{2pt}}
-\newcommand{\coverspaced}{\ifXeTeX\addfontfeature{LetterSpace=12}\fi}
 \begin{titlepage}
 \thispagestyle{empty}
-% header: school logo, course, hairline
-\begin{minipage}[b]{0.5\textwidth}\includegraphics[width=3.0cm]{static/nova_sbe_logo.png}\end{minipage}%
-\begin{minipage}[b]{0.5\textwidth}\raggedleft\footnotesize\color{fmmuted}
-2270 -- Financial Modeling\\Academic year 2026/27\enspace\textbullet\enspace Trimester 2\end{minipage}\par
-\vspace{5pt}{\color{fmdark}\rule{\linewidth}{0.8pt}}
+\vspace*{2.5cm}
+{\color{fmdark}\rule{\linewidth}{1.2pt}}\\[8pt]
+{\Huge\bfseries\color{fmdark} Risk Parity + Trend}\\[6pt]
+{\Large A lower-drawdown alternative to the 60/40 portfolio}\\[4pt]
+{\large Investor prospectus \textbullet{} Model portfolio of six asset-class ETFs}\\
+{\color{fmdark}\rule{\linewidth}{1.2pt}}
+\vspace{1.4cm}
 
-\vspace{3.3cm}
-% title block with a navy accent bar on its left
-\noindent{\color{fmdark}\vrule width 2.5pt}\hspace{16pt}%
-\begin{minipage}{0.88\linewidth}\raggedright
-\vspace{4pt}
-{\footnotesize\bfseries\color{fmdark}\coverspaced INVESTOR PROSPECTUS}\par\vspace{12pt}
-{\fontsize{34}{40}\selectfont\bfseries\color{fmdark}Risk Parity + Trend}\par\vspace{9pt}
-{\fontsize{15}{19}\selectfont\color{black!80}A lower-drawdown alternative to the 60/40 portfolio}\par\vspace{9pt}
-{\small\color{fmmuted}Model portfolio of six asset-class ETFs with equal risk contributions,\\a 10-month trend filter and monthly rebalancing.}
-\vspace{4pt}
-\end{minipage}
-
-\vspace{1.9cm}
-% key facts: a small ruled table, all values from the notebook register
-{\small\bfseries\color{fmdark}Key facts}\par
-{\footnotesize\color{fmmuted}\hypersetup{urlcolor=fmmuted}Backtest \res{sample_start}--\res{sample_end}, monthly, net of \res{cost_bps} trading costs}\par\vspace{5pt}
-{\arrayrulecolor{fmdark}\renewcommand{\arraystretch}{1.25}%
-\begin{tabular}{@{}p{5.4cm}>{\raggedleft\arraybackslash}p{2.3cm}>{\raggedleft\arraybackslash}p{2.3cm}@{}}
-\toprule[0.8pt]
-{\footnotesize\color{fmmuted}Measure} & {\footnotesize\bfseries\color{fmdark}Strategy} & {\footnotesize\color{fmmuted}60/40}\\
-\arrayrulecolor{fmlight}\midrule
-Maximum drawdown & {\hypersetup{urlcolor=fmdark}\bfseries\res{strat_max_dd}} & \res{b6040_max_dd}\\
-Volatility p.a. & {\hypersetup{urlcolor=fmdark}\bfseries\res{strat_ann_vol}} & \res{b6040_ann_vol}\\
-Sharpe ratio & {\hypersetup{urlcolor=fmdark}\bfseries\res{strat_sharpe}} & \res{b6040_sharpe}\\
-Average return p.a. & {\hypersetup{urlcolor=fmdark}\bfseries\res{strat_ann_mean}} & \res{b6040_ann_mean}\\
-\arrayrulecolor{fmdark}\bottomrule[0.8pt]
-\end{tabular}}
+\begin{tabular}{@{}ll@{}}
+\textbf{Course} & Financial Modeling, Nova School of Business and Economics\\
+\textbf{Moodle group} & Group Z\\[4pt]
+\textbf{Members} & Gabriel Depraz (56900)\\
+ & Marwan El-shazly (78218)\\
+ & Bruno Francisco Barth (79727)\\
+ & Tim Jonas Trompa (64287)\\
+ & Paul Kuehl (64253)\\
+ & Felix Schoenstein (80555)\\[4pt]
+\textbf{Date} & 24 November 2026\\[4pt]
+\textbf{Interactive app} & \href{\appurl}{\nolinkurl{04financial-modelin-group-projects-u7jx8pavhcsfkqmkps5b5d.streamlit.app}}\\
+\textbf{Code \& notebook} & \href{\repourl}{\nolinkurl{github.com/paul2108/04_Financial-Modelin-Group-projects}}\\
+\end{tabular}
 
 \vfill
-% team and course
-\begin{minipage}[t]{0.5\textwidth}
-\coverlabel{Prepared by \textendash{} Group Z}
-\begin{tabular}{@{}l@{\hspace{1.2em}}l@{}}
-Gabriel Depraz & {\color{fmmuted}56900}\\
-Marwan El-shazly & {\color{fmmuted}78218}\\
-Bruno Francisco Barth & {\color{fmmuted}79727}\\
-Tim Jonas Trompa & {\color{fmmuted}64287}\\
-Paul Kuehl & {\color{fmmuted}64253}\\
-Felix Schoenstein & {\color{fmmuted}80555}\\
-\end{tabular}
-\end{minipage}%
-\begin{minipage}[t]{0.5\textwidth}
-\coverlabel{Moodle group}
-Group Z\par\vspace{8pt}
-\coverlabel{Date}
-24 November 2026\par\vspace{8pt}
-\coverlabel{Data}
-Yahoo Finance, up to \res{data_end}
-\end{minipage}
-\par\vspace{0.8cm}
-{\urlstyle{same}%
-\coverlabel{Online}
-\begin{tabular}{@{}l@{\hspace{1.2em}}l@{}}
-Interactive app & {\small\url{\appurl}}\\
-Code \& notebook & {\small\url{\repourl}}\\
-\end{tabular}}
-
-\vspace{0.9cm}
-{\color{fmdark}\rule{\linewidth}{0.4pt}}\par\vspace{2pt}
-{\footnotesize\color{fmmuted}\textit{Past performance, in particular simulated past performance, is not a reliable indicator of
-future results. This document was prepared for a university course and is not investment advice.}}
+\small\textit{Past performance, in particular simulated past performance, is not a reliable indicator of future
+results. This document was prepared for a university course and is not investment advice.}
 \end{titlepage}
 \setcounter{page}{1}
 

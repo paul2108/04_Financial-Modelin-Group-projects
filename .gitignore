@@ -19,3 +19,6 @@ prospectus/*.synctex.gz
 prospectus/main.pdf
 # Local download/score cache of the notebook (Section 9.10)
 notebook/cache/
+# Outputs the notebook writes on every run (not needed for the submission)
+notebook/groupz_test_results.txt
+notebook/fomc_scores.csv

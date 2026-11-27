@@ -61,8 +61,12 @@ def prepare(nb):
             # merge consecutive stream outputs and keep only the final state of each rewritten line
             merged = []
             for out in cell.get("outputs", []):
-                if (out.get("output_type") == "stream" and merged and merged[-1].get("output_type") == "stream"
-                        and merged[-1]["name"] == out["name"]):
+                if (
+                    out.get("output_type") == "stream"
+                    and merged
+                    and merged[-1].get("output_type") == "stream"
+                    and merged[-1]["name"] == out["name"]
+                ):
                     merged[-1]["text"] += out["text"]
                 else:
                     merged.append(out)
@@ -87,6 +91,7 @@ def ensure_pandoc():
     if shutil.which("pandoc"):
         return
     import pypandoc  # noqa: PLC0415  (pypandoc_binary bundles a pandoc executable)
+
     os.environ["PATH"] = str(Path(pypandoc.get_pandoc_path()).parent) + os.pathsep + os.environ["PATH"]
 
 
@@ -98,7 +103,7 @@ def main() -> int:
     nb = nbformat.read(NOTEBOOK, as_version=4)
     n_code = sum(c.cell_type == "code" for c in nb.cells)
     n_run = sum(bool(c.cell_type == "code" and c.get("execution_count")) for c in nb.cells)
-    if n_run < n_code - 1:          # the Colab install cell may have no execution count
+    if n_run < n_code - 1:  # the Colab install cell may have no execution count
         print(f"Notebook has only {n_run} of {n_code} code cells executed - run `make notebook` first.")
         return 1
     nb, n_tables = prepare(nb)
@@ -109,12 +114,16 @@ def main() -> int:
     ensure_pandoc()
     exporter = LatexExporter()
     body, resources = exporter.from_notebook_node(
-        nb, resources={"metadata": {"name": "Risk Parity + Trend: backtest notebook (Group Z)"}})
+        nb, resources={"metadata": {"name": "Risk Parity + Trend: backtest notebook (Group Z)"}}
+    )
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)
         # recent pandoc versions write \def\LTcaptype{none} for markdown tables without caption
-        body = body.replace("\\begin{document}",
-                            "\\setcounter{secnumdepth}{0}\n\\makeatletter\\@ifundefined{c@none}{\\newcounter{none}}{}\\makeatother\n\\begin{document}", 1)
+        body = body.replace(
+            "\\begin{document}",
+            "\\setcounter{secnumdepth}{0}\n\\makeatletter\\@ifundefined{c@none}{\\newcounter{none}}{}\\makeatother\n\\begin{document}",
+            1,
+        )
         (tmp / "notebook.tex").write_text(body, encoding="utf-8")
         for name, content in resources.get("outputs", {}).items():
             (tmp / name).write_bytes(content)

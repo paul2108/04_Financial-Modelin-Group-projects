@@ -42,13 +42,13 @@ def test_hysteresis_keeps_state_inside_the_band():
     sma = px["X"].rolling(10).mean()
     sig = sc.trend_signal_hysteresis(px, 10, 0.02)["X"]
     assert sig.iloc[:9].isna().all()
-    assert sig.iloc[9] == 1.0                   # first month: plain rule, 101 > SMA
-    assert px["X"].iloc[10] < sma.iloc[10]      # plain rule would sell here ...
-    assert sig.iloc[10] == 1.0                  # ... hysteresis keeps the asset (inside the band)
-    assert sig.iloc[11] == 0.0                  # 90 is far below SMA x 0.98: sell
-    assert px["X"].iloc[12] > sma.iloc[12]      # plain rule would buy back here ...
-    assert sig.iloc[12] == 0.0                  # ... hysteresis waits
-    assert sig.iloc[13] == 1.0                  # 112 is above SMA x 1.02: buy
+    assert sig.iloc[9] == 1.0  # first month: plain rule, 101 > SMA
+    assert px["X"].iloc[10] < sma.iloc[10]  # plain rule would sell here ...
+    assert sig.iloc[10] == 1.0  # ... hysteresis keeps the asset (inside the band)
+    assert sig.iloc[11] == 0.0  # 90 is far below SMA x 0.98: sell
+    assert px["X"].iloc[12] > sma.iloc[12]  # plain rule would buy back here ...
+    assert sig.iloc[12] == 0.0  # ... hysteresis waits
+    assert sig.iloc[13] == 1.0  # 112 is above SMA x 1.02: buy
 
 
 def test_hysteresis_has_no_look_ahead(data):
@@ -106,14 +106,19 @@ def test_band_always_executes_exits(data, dates):
     target = W.loc[ex.index, RISKY]
     exits = target.to_numpy() == 0.0
     assert exits.any()
-    assert (ex[RISKY].to_numpy()[exits] == 0.0).all()   # sold whenever the trend filter says so
+    assert (ex[RISKY].to_numpy()[exits] == 0.0).all()  # sold whenever the trend filter says so
 
 
 def test_band_hand_calculation():
     idx = pd.date_range("2020-01-31", periods=3, freq="ME")
     prices = pd.DataFrame({"X": [100.0, 101.0, 101.0], "Y": [100.0, 100.0, 100.0]}, index=idx)
-    d = sc.MarketData(prices_d=prices, rets_d=prices.pct_change(), prices_m=prices,
-                      rets_m=prices.pct_change(), rf_m=pd.Series(0.0, index=idx))
+    d = sc.MarketData(
+        prices_d=prices,
+        rets_d=prices.pct_change(),
+        prices_m=prices,
+        rets_m=prices.pct_change(),
+        rf_m=pd.Series(0.0, index=idx),
+    )
     W = pd.DataFrame({"X": [0.5, 0.5], "Y": [0.5, 0.5], "CASH": [0.0, 0.0]}, index=idx[:2])
     res = sc.backtest_band(W, d, 0.0, 0.01)
     # after month 1, X has drifted to 50.5/100.5 = 0.5025: only 0.25 pp away -> not traded
@@ -131,8 +136,13 @@ def test_daily_engine_reproduces_monthly_engine(data, dates):
     picks = pd.DatetimeIndex(days.groupby(px.index.to_period("M")).last().to_numpy())
     prices_m = px.loc[picks]
     rf_m = (data.prices_d[RF].ffill(limit=5).loc[picks] / 1200).shift(1)
-    dm = sc.MarketData(prices_d=data.prices_d, rets_d=data.rets_d, prices_m=prices_m,
-                       rets_m=prices_m.pct_change(fill_method=None), rf_m=rf_m)
+    dm = sc.MarketData(
+        prices_d=data.prices_d,
+        rets_d=data.rets_d,
+        prices_m=prices_m,
+        rets_m=prices_m.pct_change(fill_method=None),
+        rf_m=rf_m,
+    )
     Wd = W.set_axis(picks[picks.to_period("M").isin(W.index.to_period("M"))])
     monthly = sc.backtest(Wd, dm, 10.0)["net"]
     nav, to = sc.backtest_daily(Wd, px, rf_m.shift(-1), 10.0)
@@ -140,7 +150,7 @@ def test_daily_engine_reproduces_monthly_engine(data, dates):
     daily = (sampled / sampled.shift(1) - 1.0).iloc[1:]
     np.testing.assert_allclose(daily.to_numpy(), monthly.to_numpy(), atol=1e-12)
     assert nav.iloc[0] == 1.0
-    assert to.iloc[0] == pytest.approx(Wd[RISKY].iloc[0].sum())   # first trade buys the risky book
+    assert to.iloc[0] == pytest.approx(Wd[RISKY].iloc[0].sum())  # first trade buys the risky book
 
 
 def test_daily_engine_cash_earns_period_rate():
@@ -160,7 +170,7 @@ def test_daily_engine_late_start_holds_cash():
     dec = pd.DatetimeIndex([days[21]])
     W = pd.DataFrame({"X": [1.0], "CASH": [0.0]}, index=dec)
     nav, _ = sc.backtest_daily(W, px, pd.Series([0.0], index=dec), 0.0, start=days[0], rf_start=0.0021)
-    assert nav.loc[days[21]] == pytest.approx(1.0021)     # 21 trading days in cash at the start rate
+    assert nav.loc[days[21]] == pytest.approx(1.0021)  # 21 trading days in cash at the start rate
     assert nav.iloc[-1] == pytest.approx(1.0021 * px["X"].iloc[-1] / px["X"].iloc[21])
 
 
@@ -187,6 +197,7 @@ def test_deflated_sharpe_without_trial_spread_is_probabilistic_sharpe():
     dsr, sr0, _ = sc.deflated_sharpe(r, rf, [0.1, 0.1, 0.1], 10)
     assert sr0 == pytest.approx(0.0, abs=1e-12)
     from scipy.stats import norm
+
     sr = r.mean() / r.std(ddof=1)
     z = (r - r.mean()) / r.std(ddof=0)
     skew, kurt = (z**3).mean(), (z**4).mean()

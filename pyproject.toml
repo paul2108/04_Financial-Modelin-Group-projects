@@ -9,3 +9,10 @@ pythonpath = ["app"]
 testpaths = ["tests"]
 markers = ["network: needs internet access to Yahoo Finance (deselect with -m 'not network')"]
 filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
+
+[tool.ruff]
+# Formatting with Ruff (also used by VS Code on save). 120 characters matches how the code is written.
+line-length = 120
+target-version = "py312"
+# Generated from the notebook's "core" cells (tools/export_core.py) and must stay an exact copy: never format it
+extend-exclude = ["app/strategy_core.py"]

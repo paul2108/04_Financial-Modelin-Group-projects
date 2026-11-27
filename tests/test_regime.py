@@ -18,8 +18,9 @@ def synthetic_index(seed=3, end="2014-12-31"):
     """Daily index 1995-2014 with two known turbulent blocks (2001-2002 and 2008-2009)."""
     rng = np.random.default_rng(seed)
     idx = pd.bdate_range("1995-01-02", "2020-12-31")
-    vol = np.where(((idx >= "2001-01-01") & (idx <= "2002-12-31"))
-                   | ((idx >= "2008-01-01") & (idx <= "2009-12-31")), 0.025, 0.006)
+    vol = np.where(
+        ((idx >= "2001-01-01") & (idx <= "2002-12-31")) | ((idx >= "2008-01-01") & (idx <= "2009-12-31")), 0.025, 0.006
+    )
     mu = np.where(vol > 0.01, -0.0008, 0.0004)
     r = mu + vol * rng.standard_normal(len(idx))
     px = pd.Series(100 * np.cumprod(1 + r), index=idx, name="IDX")
@@ -98,7 +99,7 @@ def test_vol_rule_uses_only_the_past():
     # early in a turbulent block volatility is far above its history; once the block lasts long enough it
     # lifts the 80th percentile itself, so only the first months are required to be risk-off
     assert full.loc["2008-02-29":"2008-12-31"].all()
-    assert full.loc["2005-01-31":"2006-12-31"].mean() < 0.15   # rare false alarms in calm years
+    assert full.loc["2005-01-31":"2006-12-31"].mean() < 0.15  # rare false alarms in calm years
 
 
 def test_risk_off_overlay_moves_growth_assets_into_cash():
@@ -116,6 +117,7 @@ def test_risk_off_overlay_moves_growth_assets_into_cash():
 def test_parallel_walk_forward_matches_serial(probs):
     """n_jobs only changes the speed: yearly fits run in parallel (threads here, so the test runs anywhere)."""
     from joblib import parallel_config
+
     px = synthetic_index()
     feats = sc.regime_features(px, CFG.vol_window)
     dates = pd.date_range("2000-01-31", "2014-12-31", freq="ME")

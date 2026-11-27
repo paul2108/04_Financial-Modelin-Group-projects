@@ -24,6 +24,8 @@
 \usepackage[authoryear,round]{natbib}
 \usepackage{fancyhdr}
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black]{hyperref}
+% long URLs (app, repository) may also break at hyphens instead of running into the margin
+\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks\do\-}
 \usepackage{resultref}
 
 \definecolor{fmdark}{HTML}{0D366B}
@@ -77,8 +79,8 @@
  & Paul Kuehl (64253)\\
  & Felix Schoenstein (80555)\\[4pt]
 \textbf{Date} & 24 November 2026\\[4pt]
-\textbf{Interactive app} & \url{\appurl}\\
-\textbf{Code \& notebook} & \url{\repourl}\\
+\textbf{Interactive app} & \href{\appurl}{\nolinkurl{04financial-modelin-group-projects-u7jx8pavhcsfkqmkps5b5d.streamlit.app}}\\
+\textbf{Code \& notebook} & \href{\repourl}{\nolinkurl{github.com/paul2108/04_Financial-Modelin-Group-projects}}\\
 \end{tabular}
 
 \vfill

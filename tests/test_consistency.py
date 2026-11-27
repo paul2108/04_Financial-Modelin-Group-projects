@@ -16,8 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_core_is_up_to_date():
-    proc = subprocess.run([sys.executable, str(ROOT / "tools" / "export_core.py"), "--check"],
-                          capture_output=True, text=True)
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "export_core.py"), "--check"], capture_output=True, text=True
+    )
     assert proc.returncode == 0, proc.stdout + proc.stderr
 
 
@@ -62,14 +63,29 @@ def test_app_lab_reproduces_notebook_variants():
     rets = pd.read_csv(ROOT / "results" / "variants_monthly.csv", index_col=0, parse_dates=True)
     data, _ = app.load_market_data(sc.START, sc.END)
     d = app.DEFAULTS
-    cases = {"E: HRP + trend": {"weighting": "hrp"}, "H: ERC + averaged trend": {"trend_mode": "average"},
-             "I: ERC (Ledoit-Wolf) + trend": {"cov_est": "ledoit_wolf"}, "A levered to 10% vol": {"leverage": 0.10},
-             "HRP (no trend)": {"weighting": "hrp", "use_trend": False}}
+    cases = {
+        "E: HRP + trend": {"weighting": "hrp"},
+        "H: ERC + averaged trend": {"trend_mode": "average"},
+        "I: ERC (Ledoit-Wolf) + trend": {"cov_est": "ledoit_wolf"},
+        "A levered to 10% vol": {"leverage": 0.10},
+        "HRP (no trend)": {"weighting": "hrp", "use_trend": False},
+    }
     for col, change in cases.items():
         p = d | change
-        res = app.evaluate(data, p["assets"], p["cov"], p["sma"], p["use_trend"], p["weighting"], p["cost"],
-                           p["bench"], p["start_year"], cov_est=p["cov_est"], trend_mode=p["trend_mode"],
-                           leverage=p["leverage"])
+        res = app.evaluate(
+            data,
+            p["assets"],
+            p["cov"],
+            p["sma"],
+            p["use_trend"],
+            p["weighting"],
+            p["cost"],
+            p["bench"],
+            p["start_year"],
+            cov_est=p["cov_est"],
+            trend_mode=p["trend_mode"],
+            leverage=p["leverage"],
+        )
         live, nb = res["returns"], rets[col]
         assert live.index.equals(nb.index), col
         # A fresh download can differ from the notebook's in the last digits (Yahoo re-computes adjusted prices).

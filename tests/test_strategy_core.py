@@ -44,7 +44,7 @@ def data():
 def random_cov(rng, n=6):
     """Random positive-definite covariance matrix (sample covariance of 3n draws, rescaled)."""
     a = rng.standard_normal((n, 3 * n))
-    corr = np.corrcoef(a)                    # rows = variables, 3n observations -> full rank
+    corr = np.corrcoef(a)  # rows = variables, 3n observations -> full rank
     vols = rng.uniform(0.03, 0.30, n)
     return np.outer(vols, vols) * corr
 
@@ -155,7 +155,7 @@ def test_target_weights_are_valid(data):
     # trend off for an asset -> its weight is exactly zero
     sig = sc.trend_signal(data.prices_m[RISKY], 10).loc[dates]
     off = sig == 0.0
-    assert off.to_numpy().any()                      # the filter is actually switched off sometimes
+    assert off.to_numpy().any()  # the filter is actually switched off sometimes
     assert (W[RISKY].to_numpy()[off.to_numpy()] == 0.0).all()
 
 
@@ -214,8 +214,11 @@ def test_drifted_turnover_matches_hand_calculation():
     idx = pd.date_range("2020-01-31", periods=3, freq="ME")
     prices = pd.DataFrame({"X": [100.0, 110.0, 110.0], "Y": [100.0, 100.0, 100.0]}, index=idx)
     md = sc.MarketData(
-        prices_d=prices, rets_d=prices.pct_change(fill_method=None), prices_m=prices,
-        rets_m=prices.pct_change(fill_method=None), rf_m=pd.Series(0.0, index=idx),
+        prices_d=prices,
+        rets_d=prices.pct_change(fill_method=None),
+        prices_m=prices,
+        rets_m=prices.pct_change(fill_method=None),
+        rf_m=pd.Series(0.0, index=idx),
     )
     W = sc.constant_weights({"X": 0.5, "Y": 0.5}, idx)
     res = sc.backtest(W, md, cost_bps=0.0)
@@ -274,7 +277,11 @@ def test_breakeven_cost_reports_no_root_when_never_better():
 # --------------------------------------------------------------------------
 def test_run_strategy_shares_sample_window(data):
     base = sc.run_strategy(data, assets=RISKY, benchmark_weights={"AAA": 0.6, "BND": 0.4})
-    loo = sc.run_strategy(data, assets=["AAA", "BBB", "CCC"], start_decision=base["start_decision"],
-                          benchmark_weights={"AAA": 0.6, "BND": 0.4})
+    loo = sc.run_strategy(
+        data,
+        assets=["AAA", "BBB", "CCC"],
+        start_decision=base["start_decision"],
+        benchmark_weights={"AAA": 0.6, "BND": 0.4},
+    )
     assert loo["returns"].index.equals(base["returns"].index)
     assert base["benchmark"].index.equals(base["returns"].index)

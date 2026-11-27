@@ -79,8 +79,15 @@ def test_target_weights_x_defaults_reproduce_target_weights(data, dates):
     assert Wx.attrs["fsolve_fallbacks"] == W.attrs["fsolve_fallbacks"]
 
 
-@pytest.mark.parametrize("kw", [{"weighting": "hrp"}, {"trend_mode": "average"}, {"cov_estimator": "ledoit_wolf"},
-                                {"weighting": "hrp", "use_trend": False}])
+@pytest.mark.parametrize(
+    "kw",
+    [
+        {"weighting": "hrp"},
+        {"trend_mode": "average"},
+        {"cov_estimator": "ledoit_wolf"},
+        {"weighting": "hrp", "use_trend": False},
+    ],
+)
 def test_lab_weights_are_valid(data, dates, kw):
     W = sc.target_weights_x(data, RISKY, dates, **kw)
     assert np.allclose(W.sum(axis=1), 1.0)
@@ -128,11 +135,11 @@ def test_gate_verdict_hand_calculation():
     r_ref = pd.Series(0.004 + 0.02 * rng.standard_normal(len(idx)), index=idx)
     rf = pd.Series(0.001, index=idx)
     periods = dict(sc.STRESS_PERIODS)
-    better = r_ref + 0.002                        # strictly better every month: passes everything
+    better = r_ref + 0.002  # strictly better every month: passes everything
     g = sc.gate_verdict(better, r_ref, rf, periods, 2)
     assert g["PROMOTED"] and g["stress wins"] == "3 of 3"
     assert sc.gate_reason(g, 2) == "passes all gates"
-    worse = r_ref * 1.5                           # same sign, more risk: deeper drawdown
+    worse = r_ref * 1.5  # same sign, more risk: deeper drawdown
     g = sc.gate_verdict(worse, r_ref, rf, periods, 2)
     assert not g["MDD not deeper"] and not g["PROMOTED"]
     assert "deeper drawdown than A" in sc.gate_reason(g, 2)

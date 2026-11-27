@@ -57,10 +57,12 @@ def main() -> int:
             if key not in defs:
                 problems.append(f"{f.name}: \\res{{{key}}} is not in the register")
         prose = re.sub(r"\\res(?:mark)?\{[^}]*\}", "", text)
-        prose = re.sub(r"\\(cite[pt]?|ref|label|input|includegraphics|url|href|hyperlink)(\[[^]]*\])?\{[^}]*\}", "", prose)
-        prose = re.sub(r"\$[^$]*\$", "", prose)                     # maths (formulas, not results)
+        prose = re.sub(
+            r"\\(cite[pt]?|ref|label|input|includegraphics|url|href|hyperlink)(\[[^]]*\])?\{[^}]*\}", "", prose
+        )
+        prose = re.sub(r"\$[^$]*\$", "", prose)  # maths (formulas, not results)
         for m in NUM_PATTERN.finditer(prose):
-            snippet = prose[max(0, m.start() - 30): m.end() + 10].replace("\n", " ")
+            snippet = prose[max(0, m.start() - 30) : m.end() + 10].replace("\n", " ")
             if not any(a in snippet for a in ALLOWED):
                 problems.append(f"{f.name}: hand-typed number '{m.group(0).strip()}' in: ...{snippet}...")
 

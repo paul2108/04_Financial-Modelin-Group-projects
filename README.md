@@ -71,7 +71,7 @@ in `.vscode/settings.json` uses tectonic. A latexmk recipe for MacTeX/TeX Live i
 
 * The notebook is the only place where calculations are written. `make core` copies its `core` cells to `app/strategy_core.py`,
   and `tests/test_consistency.py` fails if the copy is out of date.
-* With default settings the app reproduces Table 1 of the prospectus (`pytest -m network` compares against `results/results.json`).
+* With default settings the app reproduces Table 2 of the prospectus (`pytest -m network` compares against `results/results.json`).
 * The app's *Machine learning & robustness lab* switches HRP, Ledoit-Wolf, the averaged trend signal, the HMM overlay and
   leverage on and off with the notebook's own `core` functions, and shows the pre-registered gate verdict live. The
   classifier/FinBERT variants are too heavy to recompute, so the app shows the monthly returns the notebook exports to

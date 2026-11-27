@@ -31,6 +31,9 @@ classes are covered. The project had never used these data. The rule had a Sharp
 maximum drawdown of \res{imp_oos_a_maxdd}, against \res{imp_oos_6040_sharpe} and \res{imp_oos_6040_maxdd} for 60/40. Counting all
 \res{imp_n_trials} variants tried in the notebook, the deflated Sharpe ratio \citep{bailey2014} still puts the probability that
 the true Sharpe ratio is positive at \res{imp_dsr_a}.
+\item \textbf{Taxes.} The backtest ignores taxes. With turnover of \res{strat_turnover} a year, trend switches realise
+capital gains regularly, so in a taxable account the after-tax return will be lower than shown; the strategy suits
+tax-advantaged retirement accounts best.
 \item \textbf{Short sample, model and data risk.} \res{sample_years} years contain only three major crises; the strategy's
 results depend on how future crises unfold. Covariances are estimated with error, Yahoo Finance revises adjusted prices
 occasionally, and the backtest assumes trading at closing prices without taxes.

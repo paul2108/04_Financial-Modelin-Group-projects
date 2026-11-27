@@ -10,12 +10,12 @@ and the fallback to inverse-volatility weights was never needed. Risk parity giv
 small weights and stable assets (Treasuries) large ones, so that no single asset class dominates the risk, as equities
 do in a 60/40 portfolio \citep{asness2012}.
 
-\textbf{Step 2 --- trend filter.} An asset class is held only if its month-end price is above its 10-month moving average
-\citep{faber2007}. Otherwise its risk-parity weight is invested in T-bills. Prices tend to trend over months
+\textbf{Step 2 --- trend filter.} An asset class is held only if its month-end price (adjusted for dividends) is above the average of
+its last 10 month-end prices, including the current one \citep{faber2007}. Otherwise its risk-parity weight is invested in T-bills. Prices tend to trend over months
 \citep{moskowitz2012}, so the filter exits asset classes during prolonged declines such as 2008 or the 2022 bond sell-off.
 
 \textbf{Timing and rebalancing.} The weights are decided with closing prices of the last trading day of month $t$ and earn
 the returns of month $t+1$. No information from month $t+1$ is used. The portfolio is rebalanced to its targets once a month;
-between rebalancing dates holdings drift with prices. \textbf{Motivation from past performance:} in our sample, risk
+between rebalancing dates holdings drift with prices. \textbf{What each step adds:} in our sample, risk
 parity without the filter already reduced the drawdown of an equal-weighted portfolio from \res{ewnt_max_dd} to
 \res{ercnt_max_dd}; the trend filter cut it further to \res{strat_max_dd} (Table~\ref{tab:performance}).

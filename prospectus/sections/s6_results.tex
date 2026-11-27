@@ -7,7 +7,7 @@ strategy before trading costs.}\label{fig:cumulative}
 
 Figure~\ref{fig:cumulative} shows the central trade-off. \$1 grew to \$\res{strat_final_value} in the strategy, to
 \$\res{b6040_final_value} in the 60/40 portfolio and to \$\res{mkt_final_value} in the S\&P 500. The strategy was ahead
-until 2014 because it avoided the 2008 crash, and it fell behind in the long equity bull market that followed. Table~\ref{tab:performance}
+until 2013 because it avoided the 2008 crash, and it fell behind in the long equity bull market that followed. Table~\ref{tab:performance}
 reports all measures.
 
 \begin{table}[!htb]
@@ -26,10 +26,10 @@ alpha); information ratio = annualised active return / tracking error. Turnover 
 
 \textbf{What the measures mean for our client.}
 \begin{itemize}[leftmargin=1em]
-\item \emph{Average return} \res{strat_ann_mean} p.a. vs \res{b6040_ann_mean}: the client gives up about half of the 60/40
+\item \emph{Average return} \res{strat_ann_mean} p.a. vs \res{b6040_ann_mean}: the client keeps a little over half of the 60/40
 return. Growth is still well above the T-bill rate of \res{rf_mean}, so the portfolio does grow, but slowly.
 \item \emph{Volatility} \res{strat_ann_vol} vs \res{b6040_ann_vol}: monthly swings are about \res{vol_ratio_6040} times those of
-60/40, the risk level of a short-to-medium bond fund rather than of a balanced fund.
+60/40, so the client's statements fluctuate about half as much.
 \item \emph{Sharpe ratio} \res{strat_sharpe} vs \res{b6040_sharpe}: the reward per unit of risk is the same. The strategy is not a
 better portfolio in this sense, it is a \emph{less risky} one. With a standard error of about \res{sharpe_se}
 \citep{lo2002}, the two Sharpe ratios are statistically indistinguishable.
@@ -37,7 +37,7 @@ better portfolio in this sense, it is a \emph{less risky} one. With a standard e
 the strategy is expected to lose only about \res{beta_mkt_loss10}\%. Its return hardly depends on the stock market.
 \item \emph{Alpha} \res{strat_alpha_mkt} p.a. against the market ($t=\res{strat_alpha_mkt_t}$) and \res{strat_alpha_bench} against
 60/40 ($t=\res{strat_alpha_bench_t}$): given its low market exposure, the strategy earned more than the CAPM predicts. The
-alpha is only borderline significant and mainly reflects returns of Treasuries, gold and commodities, which a stock-market factor does not capture.
+alpha is only borderline significant and plausibly reflects returns of Treasuries, gold and commodities, which a stock-market factor does not capture.
 \item \emph{Information ratio} \res{strat_info_ratio} against 60/40, with a tracking error of \res{strat_tracking_error}: in plain
 terms, the strategy underperformed the benchmark and deviated from it a lot. A client who measures success relative to 60/40
 should not buy it; the measure that matters for our client is the drawdown.
